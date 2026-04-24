@@ -8,9 +8,15 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>五行纳音 · 本命饮品</title>
     <meta name="description" content="基于五行相生相克与纳音理论，为你匹配专属饮品与最佳伴侣" />
+    <!-- CDN 预连接，加速资源加载 -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <!-- 首屏关键图片预加载 -->
+    <link rel="preload" as="image" href="https://cdn.jsdelivr.net/gh/cyfdazuiwa/flavor-ai-lab@main/images/intro-animation.gif">
     <script type="module" crossorigin src="./assets/index-D_HQT8R9.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-DoybfhkN.css">
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <!-- html2canvas 截图库改为 defer，不阻塞首屏 -->
+    <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <!-- Analytics placeholder (to be added later) -->
   </head>
   <body>
