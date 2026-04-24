@@ -112,10 +112,32 @@
                 height: height,
                 x: 0,
                 y: 0,
+                // 添加样式优化
                 onclone: (clonedDoc) => {
+                    // 移除所有边框
+                    const allElements = clonedDoc.querySelectorAll('*');
+                    allElements.forEach(el => {
+                        const style = window.getComputedStyle(el);
+                        if (style.border && style.border !== 'none') {
+                            el.style.border = 'none';
+                        }
+                        // 移除阴影
+                        el.style.boxShadow = 'none';
+                    });
+                    
+                    // 优化图片显示
                     const images = clonedDoc.querySelectorAll('img');
                     images.forEach(img => {
                         img.crossOrigin = 'anonymous';
+                        img.style.maxWidth = '100%';
+                        img.style.height = 'auto';
+                    });
+                    
+                    // 优化容器边距
+                    const containers = clonedDoc.querySelectorAll('[class*="container"], [class*="card"], [class*="box"]');
+                    containers.forEach(container => {
+                        container.style.margin = '8px 0';
+                        container.style.padding = '12px';
                     });
                 }
             }).then(canvas => {
