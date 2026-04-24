@@ -1,114 +1,117 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // 等待 html2canvas 加载完成
-    function initScreenshot() {
-        const saveButton = document.querySelector('button.flex-1.py-4.text-base.font-bold.text-\[#2C2C2C\]');
-        const screenshotTarget = document.querySelector('[code-path="src/sections/ResultPage.tsx:275:5"]');
-
+// 截图功能 - 长按保存结果页
+(function() {
+    'use strict';
+    
+    console.log('Screenshot script loading...');
+    
+    // 等待页面加载完成
+    function init() {
+        console.log('Initializing screenshot...');
+        
+        // 查找保存按钮（使用多种选择器）
+        const saveButton = document.querySelector('button[class*="flex-1"]') || 
+                          document.querySelector('button:contains("长按保存")') ||
+                          Array.from(document.querySelectorAll('button')).find(b => 
+                              b.textContent.includes('保存') || 
+                              b.textContent.includes('截图')
+                          );
+        
+        // 查找截图目标（结果页容器）
+        const screenshotTarget = document.querySelector('[class*="ResultPage"]') ||
+                                  document.querySelector('main') ||
+                                  document.querySelector('#root > div > div:last-child');
+        
+        console.log('Save button:', saveButton ? 'Found' : 'Not found');
+        console.log('Screenshot target:', screenshotTarget ? 'Found' : 'Not found');
+        
         if (!saveButton || !screenshotTarget) {
-            console.warn('Save button or screenshot target not found. Retrying...');
-            setTimeout(initScreenshot, 1000);
+            console.warn('Elements not found, retrying in 2s...');
+            setTimeout(init, 2000);
             return;
         }
-
+        
+        // 检查 html2canvas
         if (!window.html2canvas) {
-            console.warn('html2canvas not loaded yet. Retrying...');
-            setTimeout(initScreenshot, 1000);
+            console.warn('html2canvas not loaded, retrying in 2s...');
+            setTimeout(init, 2000);
             return;
         }
-
-        console.log('Screenshot initialized successfully');
-
+        
+        console.log('All resources ready, attaching events...');
+        
         let pressTimer;
-        const longPressDuration = 800; // 800ms for long press
-
+        const longPressDuration = 800;
+        
         const startPress = (e) => {
             if (e.type === 'touchstart') {
                 e.preventDefault();
             }
             
-            // 添加按压效果
             saveButton.style.transform = 'scale(0.95)';
             saveButton.style.opacity = '0.8';
-
+            
             pressTimer = setTimeout(() => {
-                // 恢复样式
                 saveButton.style.transform = '';
                 saveButton.style.opacity = '';
                 
-                // 震动反馈（如果支持）
                 if (navigator.vibrate) {
                     navigator.vibrate(50);
                 }
                 
-                console.log('Long press detected! Taking screenshot...');
+                console.log('Long press detected!');
                 takeScreenshot();
             }, longPressDuration);
         };
-
+        
         const cancelPress = () => {
             clearTimeout(pressTimer);
             saveButton.style.transform = '';
             saveButton.style.opacity = '';
         };
-
-        // 移除旧事件监听器（防止重复）
-        saveButton.removeEventListener('touchstart', startPress);
-        saveButton.removeEventListener('touchend', cancelPress);
-        saveButton.removeEventListener('touchcancel', cancelPress);
-        saveButton.removeEventListener('mousedown', startPress);
-        saveButton.removeEventListener('mouseup', cancelPress);
-        saveButton.removeEventListener('mouseleave', cancelPress);
-
-        // 添加新事件监听器
+        
+        // 添加事件监听
         saveButton.addEventListener('touchstart', startPress, { passive: false });
         saveButton.addEventListener('touchend', cancelPress);
         saveButton.addEventListener('touchcancel', cancelPress);
         saveButton.addEventListener('mousedown', startPress);
         saveButton.addEventListener('mouseup', cancelPress);
         saveButton.addEventListener('mouseleave', cancelPress);
-
+        
+        console.log('Events attached successfully');
+        
         const takeScreenshot = () => {
+            console.log('Taking screenshot...');
+            
             if (!window.html2canvas) {
-                console.error('html2canvas not loaded!');
                 alert('截图功能加载中，请稍后再试');
                 return;
             }
-
+            
             // 显示加载提示
             const toast = document.createElement('div');
-            toast.textContent = '正在生成图片...';
-            toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:16px 24px;border-radius:8px;z-index:9999;font-size:16px;';
+            toast.textContent = '正在生成高清图片...';
+            toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:20px 30px;border-radius:10px;z-index:9999;font-size:16px;';
             document.body.appendChild(toast);
-
-            // 获取目标元素的精确尺寸（使用 scrollWidth/Height 包含完整内容）
-            const width = Math.round(screenshotTarget.scrollWidth);
-            const height = Math.round(screenshotTarget.scrollHeight);
             
-            // 设置 canvas 尺寸为元素完整尺寸的 4 倍（超高清）
+            // 获取目标元素尺寸
+            const rect = screenshotTarget.getBoundingClientRect();
+            const width = Math.round(rect.width);
+            const height = Math.round(rect.height);
+            
+            // 4x 高清
             const scale = 4;
-            const canvasWidth = width * scale;
-            const canvasHeight = height * scale;
             
             html2canvas(screenshotTarget, {
                 useCORS: true,
                 scale: scale,
-                logging: false,
+                logging: true,
                 allowTaint: true,
                 backgroundColor: '#F7F5F0',
-                imageTimeout: 15000,
-                // 使用完整尺寸，避免裁剪
+                imageTimeout: 20000,
                 width: width,
                 height: height,
-                canvasWidth: canvasWidth,
-                canvasHeight: canvasHeight,
-                // 从元素左上角开始
                 x: 0,
                 y: 0,
-                // 不滚动，完整捕获
-                scrollX: -window.scrollX,
-                scrollY: -window.scrollY,
-                windowWidth: document.documentElement.scrollWidth,
-                windowHeight: document.documentElement.scrollHeight,
                 onclone: (clonedDoc) => {
                     const images = clonedDoc.querySelectorAll('img');
                     images.forEach(img => {
@@ -118,10 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }).then(canvas => {
                 document.body.removeChild(toast);
                 
-                // 使用 PNG 保证最高质量
                 const dataUrl = canvas.toDataURL('image/png');
                 
-                // 创建下载链接
                 const link = document.createElement('a');
                 link.download = `五行纳音-${new Date().getTime()}.png`;
                 link.href = dataUrl;
@@ -129,15 +130,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.click();
                 document.body.removeChild(link);
                 
-                console.log('Screenshot saved:', canvasWidth, 'x', canvasHeight, 'File size:', Math.round(dataUrl.length / 1024), 'KB');
+                console.log('Screenshot saved! Size:', canvas.width, 'x', canvas.height);
             }).catch(error => {
                 document.body.removeChild(toast);
                 console.error('Screenshot failed:', error);
-                alert('截图失败，请重试。错误：' + error.message);
+                alert('截图失败: ' + error.message);
             });
         };
     }
-
-    // 延迟初始化，等待所有资源加载
-    setTimeout(initScreenshot, 2000);
-});
+    
+    // 延迟初始化
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => setTimeout(init, 2000));
+    } else {
+        setTimeout(init, 2000);
+    }
+})();
