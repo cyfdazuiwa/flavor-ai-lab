@@ -75,6 +75,16 @@
           min-height: 100vh;
         }
       }
+      /* 去掉图片白色圆形背景 */
+      img {
+        background: transparent !important;
+        border-radius: 0 !important;
+      }
+      /* 针对可能有背景容器的图片 */
+      img[src*="char-"] {
+        background: none !important;
+        background-color: transparent !important;
+      }
     </style>
   </head>
   <body>
