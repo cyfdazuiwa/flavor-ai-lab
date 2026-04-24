@@ -80,12 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
             toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:16px 24px;border-radius:8px;z-index:9999;font-size:16px;';
             document.body.appendChild(toast);
 
-            // 获取目标元素的精确尺寸
-            const rect = screenshotTarget.getBoundingClientRect();
-            const width = Math.round(rect.width);
-            const height = Math.round(rect.height);
+            // 获取目标元素的精确尺寸（使用 scrollWidth/Height 包含完整内容）
+            const width = Math.round(screenshotTarget.scrollWidth);
+            const height = Math.round(screenshotTarget.scrollHeight);
             
-            // 设置 canvas 尺寸为元素实际尺寸的 4 倍（超高清）
+            // 设置 canvas 尺寸为元素完整尺寸的 4 倍（超高清）
             const scale = 4;
             const canvasWidth = width * scale;
             const canvasHeight = height * scale;
@@ -97,16 +96,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 allowTaint: true,
                 backgroundColor: '#F7F5F0',
                 imageTimeout: 15000,
+                // 使用完整尺寸，避免裁剪
                 width: width,
                 height: height,
                 canvasWidth: canvasWidth,
                 canvasHeight: canvasHeight,
+                // 从元素左上角开始
                 x: 0,
                 y: 0,
-                scrollX: 0,
-                scrollY: 0,
-                windowWidth: width,
-                windowHeight: height,
+                // 不滚动，完整捕获
+                scrollX: -window.scrollX,
+                scrollY: -window.scrollY,
+                windowWidth: document.documentElement.scrollWidth,
+                windowHeight: document.documentElement.scrollHeight,
                 onclone: (clonedDoc) => {
                     const images = clonedDoc.querySelectorAll('img');
                     images.forEach(img => {
@@ -127,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.click();
                 document.body.removeChild(link);
                 
-                console.log('Screenshot saved:', canvasWidth, 'x', canvasHeight);
+                console.log('Screenshot saved:', canvasWidth, 'x', canvasHeight, 'File size:', Math.round(dataUrl.length / 1024), 'KB');
             }).catch(error => {
                 document.body.removeChild(toast);
                 console.error('Screenshot failed:', error);
