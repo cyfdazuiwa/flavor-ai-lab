@@ -10,7 +10,6 @@
         
         // 查找保存按钮（使用多种选择器）
         const saveButton = document.querySelector('button[class*="flex-1"]') || 
-                          document.querySelector('button:contains("长按保存")') ||
                           Array.from(document.querySelectorAll('button')).find(b => 
                               b.textContent.includes('保存') || 
                               b.textContent.includes('截图')
@@ -93,33 +92,16 @@
             toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:20px 30px;border-radius:10px;z-index:9999;font-size:16px;';
             document.body.appendChild(toast);
             
-            // 获取目标元素尺寸
-            const rect = screenshotTarget.getBoundingClientRect();
-            const width = Math.round(rect.width);
-            const height = Math.round(rect.height);
-            
-            // 2x 高清（平衡清晰度和文件大小）
-            const scale = 2;
-            
+            // 使用 html2canvas 自动计算尺寸，避免拉伸
             html2canvas(screenshotTarget, {
                 useCORS: true,
-                scale: scale,
+                scale: 2, // 2x 高清
                 logging: true,
                 allowTaint: true,
                 backgroundColor: '#F7F5F0',
                 imageTimeout: 20000,
-                width: width,
-                height: height,
-                x: 0,
-                y: 0,
-                // 禁用平滑，保持锐利
-                imageSmoothingEnabled: false,
-                // 优化字体渲染
+                // 不设置 width/height，让 html2canvas 自动计算
                 onclone: (clonedDoc) => {
-                    // 优化字体
-                    clonedDoc.body.style.webkitFontSmoothing = 'antialiased';
-                    clonedDoc.body.style.mozOsxFontSmoothing = 'grayscale';
-                    
                     // 移除所有边框和阴影
                     const allElements = clonedDoc.querySelectorAll('*');
                     allElements.forEach(el => {
@@ -134,18 +116,12 @@
                         img.crossOrigin = 'anonymous';
                         img.style.maxWidth = '100%';
                         img.style.height = 'auto';
-                        img.style.imageRendering = 'crisp-edges';
-                    });
-                    
-                    // 优化文字
-                    const textElements = clonedDoc.querySelectorAll('h1, h2, h3, p, span');
-                    textElements.forEach(el => {
-                        el.style.textRendering = 'optimizeLegibility';
                     });
                 }
             }).then(canvas => {
                 document.body.removeChild(toast);
                 
+                // 使用 PNG 保证质量
                 const dataUrl = canvas.toDataURL('image/png');
                 
                 const link = document.createElement('a');
