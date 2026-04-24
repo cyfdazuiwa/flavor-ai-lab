@@ -85,8 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const width = Math.round(rect.width);
             const height = Math.round(rect.height);
             
-            // 设置 canvas 尺寸为元素实际尺寸的 2 倍（高清）
-            const scale = 2;
+            // 设置 canvas 尺寸为元素实际尺寸的 4 倍（超高清）
+            const scale = 4;
             const canvasWidth = width * scale;
             const canvasHeight = height * scale;
             
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }).then(canvas => {
                 document.body.removeChild(toast);
                 
-                // 使用 PNG 保证质量
+                // 使用 PNG 保证最高质量
                 const dataUrl = canvas.toDataURL('image/png');
                 
                 // 创建下载链接
