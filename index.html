@@ -97,60 +97,72 @@
         '茉莉汤力', '轻咖汤力', '青桔乳酸', '紫苏话梅'
       ];
       
-      // 等待 Umami 加载
-      function trackResult() {
-        // 方法1：通过 h1 标题提取（格式："用户名 的 饮品名"）
-        const h1 = document.querySelector('h1');
-        if (h1) {
-          const text = h1.textContent;
-          // 查找是否包含饮品名称
-          for (const drink of DRINKS) {
-            if (text.includes(drink)) {
-              trackDrink(drink, 'h1');
-              return;
-            }
-          }
-        }
+      // 发送追踪事件（兼容多种方式）
+      function sendTrack(drinkName, nayin) {
+        console.log('Tracking:', drinkName, nayin);
         
-        // 方法2：通过页面文字内容匹配
-        const bodyText = document.body.innerText;
-        for (const drink of DRINKS) {
-          if (bodyText.includes(drink)) {
-            // 确认是结果页（有纳音信息）
-            if (bodyText.includes('纳音：')) {
-              trackDrink(drink, 'content');
-              return;
-            }
-          }
-        }
-      }
-      
-      function trackDrink(drinkName, source) {
-        // 避免重复追踪
-        if (window._lastTrackedDrink === drinkName) return;
-        window._lastTrackedDrink = drinkName;
-        
-        // 提取纳音信息
-        const nayinMatch = document.body.innerText.match(/纳音：(.+)/);
-        const nayin = nayinMatch ? nayinMatch[1].trim() : 'unknown';
-        
-        // 发送 Umami 自定义事件
-        if (typeof umami !== 'undefined') {
+        // 方式1：umami.track（Umami v2）
+        if (typeof umami !== 'undefined' && umami.track) {
           umami.track('result_view', {
             drink: drinkName,
-            nayin: nayin,
-            source: source,
-            url: window.location.href
+            nayin: nayin
           });
-          console.log('✓ Tracked result:', drinkName, nayin);
+          console.log('✓ Sent via umami.track');
+          return;
+        }
+        
+        // 方式2：直接发送 beacon（备用）
+        const data = {
+          type: 'event',
+          payload: {
+            website: 'c594553c-1c3f-40b4-8d8a-f83705159a47',
+            hostname: 'cyfdazuiwa.github.io',
+            screen: window.screen.width + 'x' + window.screen.height,
+            language: navigator.language,
+            title: document.title,
+            url: window.location.pathname,
+            referrer: document.referrer,
+            event_name: 'result_view',
+            event_data: JSON.stringify({ drink: drinkName, nayin: nayin })
+          }
+        };
+        
+        fetch('https://umami-production-35ec.up.railway.app/api/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        }).then(() => {
+          console.log('✓ Sent via fetch');
+        }).catch(err => {
+          console.error('✗ Failed to send:', err);
+        });
+      }
+      
+      // 检查并追踪结果页
+      function trackResult() {
+        const bodyText = document.body.innerText;
+        
+        // 查找饮品名称
+        for (const drink of DRINKS) {
+          if (bodyText.includes(drink) && bodyText.includes('纳音：')) {
+            // 提取纳音
+            const nayinMatch = bodyText.match(/纳音：(.+)/);
+            const nayin = nayinMatch ? nayinMatch[1].trim() : 'unknown';
+            
+            // 避免重复追踪
+            if (window._lastTrackedDrink !== drink) {
+              window._lastTrackedDrink = drink;
+              sendTrack(drink, nayin);
+            }
+            return;
+          }
         }
       }
       
       // 页面加载后检查
       document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(trackResult, 1000);
+        setTimeout(trackResult, 1500);
         setTimeout(trackResult, 3000);
-        setTimeout(trackResult, 5000);
       });
       
       // 监听 URL 变化（SPA 路由）
@@ -159,8 +171,8 @@
         const url = location.href;
         if (url !== lastUrl) {
           lastUrl = url;
-          window._lastTrackedDrink = null; // 重置追踪状态
-          setTimeout(trackResult, 1000);
+          window._lastTrackedDrink = null;
+          setTimeout(trackResult, 1500);
         }
       }).observe(document, { subtree: true, childList: true });
     </script>
