@@ -90,35 +90,67 @@
     <script defer src="https://umami-production-35ec.up.railway.app/script.js" data-website-id="c594553c-1c3f-40b4-8d8a-f83705159a47"></script>
     <!-- 追踪用户结果页 -->
     <script>
+      // 12种饮品列表（用于匹配）
+      const DRINKS = [
+        '燕麦可可', '茉莉糖梨', '暖姜红茶', '青橘乳酸',
+        '清咖糖梨', '青柚乌龙', '赤霞血橙', '海盐白桃',
+        '松针青梅', '玄米柠檬', '桂花酒酿', '薄荷苏打'
+      ];
+      
       // 等待 Umami 加载
       function trackResult() {
-        // 检查结果页特征：有 h1 标题且包含"的"字（如"测试的 燕麦可可"）
+        // 方法1：通过 h1 标题提取（格式："用户名 的 饮品名"）
         const h1 = document.querySelector('h1');
-        if (h1 && h1.textContent.includes('的')) {
-          // 提取饮料名称（h1 后面的文字）
-          const drinkName = h1.textContent.split('的')[1]?.trim() || 'unknown';
-          
-          // 提取纳音信息
-          const nayinText = document.querySelector('p.text-sm.text-\\[\\#A8A29E\\]');
-          const nayin = nayinText ? nayinText.textContent.replace('纳音：', '').trim() : 'unknown';
-          
-          // 发送 Umami 自定义事件
-          if (typeof umami !== 'undefined') {
-            umami.track('result_view', {
-              drink: drinkName,
-              nayin: nayin,
-              url: window.location.href
-            });
-            console.log('Tracked result:', drinkName, nayin);
+        if (h1) {
+          const text = h1.textContent;
+          // 查找是否包含饮品名称
+          for (const drink of DRINKS) {
+            if (text.includes(drink)) {
+              trackDrink(drink, 'h1');
+              return;
+            }
           }
+        }
+        
+        // 方法2：通过页面文字内容匹配
+        const bodyText = document.body.innerText;
+        for (const drink of DRINKS) {
+          if (bodyText.includes(drink)) {
+            // 确认是结果页（有纳音信息）
+            if (bodyText.includes('纳音：')) {
+              trackDrink(drink, 'content');
+              return;
+            }
+          }
+        }
+      }
+      
+      function trackDrink(drinkName, source) {
+        // 避免重复追踪
+        if (window._lastTrackedDrink === drinkName) return;
+        window._lastTrackedDrink = drinkName;
+        
+        // 提取纳音信息
+        const nayinMatch = document.body.innerText.match(/纳音：(.+)/);
+        const nayin = nayinMatch ? nayinMatch[1].trim() : 'unknown';
+        
+        // 发送 Umami 自定义事件
+        if (typeof umami !== 'undefined') {
+          umami.track('result_view', {
+            drink: drinkName,
+            nayin: nayin,
+            source: source,
+            url: window.location.href
+          });
+          console.log('✓ Tracked result:', drinkName, nayin);
         }
       }
       
       // 页面加载后检查
       document.addEventListener('DOMContentLoaded', () => {
-        // 延迟检查，等待 React 渲染
         setTimeout(trackResult, 1000);
         setTimeout(trackResult, 3000);
+        setTimeout(trackResult, 5000);
       });
       
       // 监听 URL 变化（SPA 路由）
@@ -127,6 +159,7 @@
         const url = location.href;
         if (url !== lastUrl) {
           lastUrl = url;
+          window._lastTrackedDrink = null; // 重置追踪状态
           setTimeout(trackResult, 1000);
         }
       }).observe(document, { subtree: true, childList: true });
