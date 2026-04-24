@@ -98,8 +98,8 @@
             const width = Math.round(rect.width);
             const height = Math.round(rect.height);
             
-            // 4x 高清
-            const scale = 4;
+            // 2x 高清（平衡清晰度和文件大小）
+            const scale = 2;
             
             html2canvas(screenshotTarget, {
                 useCORS: true,
@@ -112,32 +112,35 @@
                 height: height,
                 x: 0,
                 y: 0,
-                // 添加样式优化
+                // 禁用平滑，保持锐利
+                imageSmoothingEnabled: false,
+                // 优化字体渲染
                 onclone: (clonedDoc) => {
-                    // 移除所有边框
+                    // 优化字体
+                    clonedDoc.body.style.webkitFontSmoothing = 'antialiased';
+                    clonedDoc.body.style.mozOsxFontSmoothing = 'grayscale';
+                    
+                    // 移除所有边框和阴影
                     const allElements = clonedDoc.querySelectorAll('*');
                     allElements.forEach(el => {
-                        const style = window.getComputedStyle(el);
-                        if (style.border && style.border !== 'none') {
-                            el.style.border = 'none';
-                        }
-                        // 移除阴影
+                        el.style.border = 'none';
                         el.style.boxShadow = 'none';
+                        el.style.outline = 'none';
                     });
                     
-                    // 优化图片显示
+                    // 优化图片
                     const images = clonedDoc.querySelectorAll('img');
                     images.forEach(img => {
                         img.crossOrigin = 'anonymous';
                         img.style.maxWidth = '100%';
                         img.style.height = 'auto';
+                        img.style.imageRendering = 'crisp-edges';
                     });
                     
-                    // 优化容器边距
-                    const containers = clonedDoc.querySelectorAll('[class*="container"], [class*="card"], [class*="box"]');
-                    containers.forEach(container => {
-                        container.style.margin = '8px 0';
-                        container.style.padding = '12px';
+                    // 优化文字
+                    const textElements = clonedDoc.querySelectorAll('h1, h2, h3, p, span');
+                    textElements.forEach(el => {
+                        el.style.textRendering = 'optimizeLegibility';
                     });
                 }
             }).then(canvas => {
