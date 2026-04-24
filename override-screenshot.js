@@ -80,15 +80,33 @@ document.addEventListener('DOMContentLoaded', () => {
             toast.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:16px 24px;border-radius:8px;z-index:9999;font-size:16px;';
             document.body.appendChild(toast);
 
+            // 获取目标元素的精确尺寸
+            const rect = screenshotTarget.getBoundingClientRect();
+            const width = Math.round(rect.width);
+            const height = Math.round(rect.height);
+            
+            // 设置 canvas 尺寸为元素实际尺寸的 2 倍（高清）
+            const scale = 2;
+            const canvasWidth = width * scale;
+            const canvasHeight = height * scale;
+            
             html2canvas(screenshotTarget, {
                 useCORS: true,
-                scale: 3, // 提高分辨率（原来是 devicePixelRatio，可能是 1 或 2）
+                scale: scale,
                 logging: false,
                 allowTaint: true,
                 backgroundColor: '#F7F5F0',
                 imageTimeout: 15000,
-                width: screenshotTarget.offsetWidth, // 固定宽度
-                height: screenshotTarget.offsetHeight, // 固定高度
+                width: width,
+                height: height,
+                canvasWidth: canvasWidth,
+                canvasHeight: canvasHeight,
+                x: 0,
+                y: 0,
+                scrollX: 0,
+                scrollY: 0,
+                windowWidth: width,
+                windowHeight: height,
                 onclone: (clonedDoc) => {
                     const images = clonedDoc.querySelectorAll('img');
                     images.forEach(img => {
@@ -98,19 +116,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }).then(canvas => {
                 document.body.removeChild(toast);
                 
-                // 压缩图片质量，减小文件大小
-                const quality = 0.9; // 90% 质量
-                const dataUrl = canvas.toDataURL('image/jpeg', quality); // 用 JPEG 减小大小
+                // 使用 PNG 保证质量
+                const dataUrl = canvas.toDataURL('image/png');
                 
                 // 创建下载链接
                 const link = document.createElement('a');
-                link.download = `五行纳音-${new Date().getTime()}.jpg`;
+                link.download = `五行纳音-${new Date().getTime()}.png`;
                 link.href = dataUrl;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 
-                console.log('Screenshot saved successfully');
+                console.log('Screenshot saved:', canvasWidth, 'x', canvasHeight);
             }).catch(error => {
                 document.body.removeChild(toast);
                 console.error('Screenshot failed:', error);
