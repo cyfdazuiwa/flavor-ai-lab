@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=430, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#F7F5F0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -17,10 +17,82 @@
     <link rel="stylesheet" crossorigin href="./assets/index-DoybfhkN.css">
     <!-- html2canvas 截图库改为 defer，不阻塞首屏 -->
     <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <!-- Analytics placeholder (to be added later) -->
+    <!-- 图片懒加载 -->
+    <script>
+      // 全局图片懒加载
+      document.addEventListener('DOMContentLoaded', () => {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const img = entry.target;
+              if (img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+              }
+              observer.unobserve(img);
+            }
+          });
+        }, {
+          rootMargin: '50px 0px',
+          threshold: 0.01
+        });
+        
+        // 观察所有图片
+        const observeImages = () => {
+          document.querySelectorAll('img[data-src], img[src*="cdn.jsdelivr"]').forEach(img => {
+            if (!img.dataset.src && img.src) {
+              img.dataset.src = img.src;
+              // 根据图片位置决定是否立即加载首屏图片
+              const rect = img.getBoundingClientRect();
+              const isInViewport = rect.top < window.innerHeight + 100;
+              if (!isInViewport) {
+                img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+              }
+            }
+            imageObserver.observe(img);
+          });
+        };
+        
+        observeImages();
+        // 动态内容加载后继续观察
+        new MutationObserver(observeImages).observe(document.body, { childList: true, subtree: true });
+      });
+    </script>
+    <style>
+      /* 电脑端居中显示手机版 */
+      @media (min-width: 431px) {
+        html {
+          background: #e5e5e5;
+          display: flex;
+          justify-content: center;
+          min-height: 100vh;
+        }
+        body {
+          width: 430px;
+          max-width: 430px;
+          background: #F7F5F0;
+          box-shadow: 0 0 20px rgba(0,0,0,0.1);
+          min-height: 100vh;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script src="./override-screenshot.js"></script>
+    <script>
+      // 注册 Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then((registration) => {
+              console.log('SW registered:', registration.scope);
+            })
+            .catch((error) => {
+              console.log('SW registration failed:', error);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
