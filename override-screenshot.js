@@ -82,13 +82,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             html2canvas(screenshotTarget, {
                 useCORS: true,
-                scale: window.devicePixelRatio || 2,
+                scale: 3, // 提高分辨率（原来是 devicePixelRatio，可能是 1 或 2）
                 logging: false,
                 allowTaint: true,
-                backgroundColor: '#F7F5F0', // 设置背景色
-                imageTimeout: 15000, // 图片加载超时 15 秒
+                backgroundColor: '#F7F5F0',
+                imageTimeout: 15000,
+                width: screenshotTarget.offsetWidth, // 固定宽度
+                height: screenshotTarget.offsetHeight, // 固定高度
                 onclone: (clonedDoc) => {
-                    // 克隆后的文档处理
                     const images = clonedDoc.querySelectorAll('img');
                     images.forEach(img => {
                         img.crossOrigin = 'anonymous';
@@ -97,10 +98,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }).then(canvas => {
                 document.body.removeChild(toast);
                 
+                // 压缩图片质量，减小文件大小
+                const quality = 0.9; // 90% 质量
+                const dataUrl = canvas.toDataURL('image/jpeg', quality); // 用 JPEG 减小大小
+                
                 // 创建下载链接
                 const link = document.createElement('a');
-                link.download = `五行纳音-${new Date().getTime()}.png`;
-                link.href = canvas.toDataURL('image/png');
+                link.download = `五行纳音-${new Date().getTime()}.jpg`;
+                link.href = dataUrl;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
