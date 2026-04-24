@@ -97,11 +97,11 @@
         '茉莉汤力', '轻咖汤力', '青桔乳酸', '紫苏话梅'
       ];
       
-      // 发送追踪事件（兼容多种方式）
+      // 发送追踪事件
       function sendTrack(drinkName, nayin) {
-        console.log('Tracking:', drinkName, nayin);
+        console.log('🎯 Tracking result:', drinkName, nayin);
         
-        // 方式1：umami.track（Umami v2）
+        // 方式1：umami.track（Umami v2+）
         if (typeof umami !== 'undefined' && umami.track) {
           umami.track('result_view', {
             drink: drinkName,
@@ -111,8 +111,15 @@
           return;
         }
         
-        // 方式2：直接发送 beacon（备用）
-        const data = {
+        // 方式2：umami.trackEvent（Umami v1）
+        if (typeof umami !== 'undefined' && umami.trackEvent) {
+          umami.trackEvent('result_view', { drink: drinkName, nayin: nayin });
+          console.log('✓ Sent via umami.trackEvent');
+          return;
+        }
+        
+        // 方式3：直接发送 beacon（备用）
+        const payload = {
           type: 'event',
           payload: {
             website: 'c594553c-1c3f-40b4-8d8a-f83705159a47',
@@ -130,9 +137,9 @@
         fetch('https://umami-production-35ec.up.railway.app/api/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+          body: JSON.stringify(payload)
         }).then(() => {
-          console.log('✓ Sent via fetch');
+          console.log('✓ Sent via fetch API');
         }).catch(err => {
           console.error('✗ Failed to send:', err);
         });
@@ -159,11 +166,24 @@
         }
       }
       
-      // 页面加载后检查
-      document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(trackResult, 1500);
-        setTimeout(trackResult, 3000);
-      });
+      // 等待 Umami 脚本加载完成
+      function initTracking() {
+        console.log('🔍 Init tracking...');
+        
+        // 立即检查一次
+        trackResult();
+        
+        // 延迟检查（等待 React 渲染）
+        setTimeout(trackResult, 2000);
+        setTimeout(trackResult, 4000);
+      }
+      
+      // 页面加载后初始化
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTracking);
+      } else {
+        initTracking();
+      }
       
       // 监听 URL 变化（SPA 路由）
       let lastUrl = location.href;
@@ -172,7 +192,7 @@
         if (url !== lastUrl) {
           lastUrl = url;
           window._lastTrackedDrink = null;
-          setTimeout(trackResult, 1500);
+          setTimeout(trackResult, 2000);
         }
       }).observe(document, { subtree: true, childList: true });
     </script>
