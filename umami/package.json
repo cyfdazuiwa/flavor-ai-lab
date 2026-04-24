@@ -1,0 +1,17 @@
+{
+  "name": "umami",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:db && next build",
+    "build:db": "npx prisma migrate deploy",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "umami": "github:umami-software/umami"
+  }
+}
