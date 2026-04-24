@@ -88,6 +88,49 @@
     </style>
     <!-- Umami Analytics -->
     <script defer src="https://umami-production-35ec.up.railway.app/script.js" data-website-id="c594553c-1c3f-40b4-8d8a-f83705159a47"></script>
+    <!-- 追踪用户结果页 -->
+    <script>
+      // 等待 Umami 加载
+      function trackResult() {
+        // 检查结果页特征：有 h1 标题且包含"的"字（如"测试的 燕麦可可"）
+        const h1 = document.querySelector('h1');
+        if (h1 && h1.textContent.includes('的')) {
+          // 提取饮料名称（h1 后面的文字）
+          const drinkName = h1.textContent.split('的')[1]?.trim() || 'unknown';
+          
+          // 提取纳音信息
+          const nayinText = document.querySelector('p.text-sm.text-\\[\\#A8A29E\\]');
+          const nayin = nayinText ? nayinText.textContent.replace('纳音：', '').trim() : 'unknown';
+          
+          // 发送 Umami 自定义事件
+          if (typeof umami !== 'undefined') {
+            umami.track('result_view', {
+              drink: drinkName,
+              nayin: nayin,
+              url: window.location.href
+            });
+            console.log('Tracked result:', drinkName, nayin);
+          }
+        }
+      }
+      
+      // 页面加载后检查
+      document.addEventListener('DOMContentLoaded', () => {
+        // 延迟检查，等待 React 渲染
+        setTimeout(trackResult, 1000);
+        setTimeout(trackResult, 3000);
+      });
+      
+      // 监听 URL 变化（SPA 路由）
+      let lastUrl = location.href;
+      new MutationObserver(() => {
+        const url = location.href;
+        if (url !== lastUrl) {
+          lastUrl = url;
+          setTimeout(trackResult, 1000);
+        }
+      }).observe(document, { subtree: true, childList: true });
+    </script>
   </head>
   <body>
     <div id="root"></div>
