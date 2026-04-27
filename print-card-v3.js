@@ -1,5 +1,5 @@
 // 打印卡片功能 - 14cm x 10cm 竖版小卡片
-// 风格：极简线性设计，参考 Hudson Gavin Martin
+// 风格：参考用户提供的排版设计
 (function() {
     'use strict';
     
@@ -41,206 +41,245 @@
         return container;
     }
     
-    // 添加打印样式 - 极简线性设计
+    // 添加打印样式
     function addPrintStyles() {
         const style = document.createElement('style');
         style.textContent = `
             .print-only { display: none !important; }
             
             @media print {
-                /* 强制去掉所有默认边距 */
                 @page {
                     size: 10cm 14cm;
-                    margin: 0 !important;
-                    padding: 0 !important;
+                    margin: 0;
                 }
                 
-                /* 隐藏原页面 */
                 body > *:not(.print-only) { display: none !important; }
                 
-                /* 打印容器全屏 */
                 .print-only {
                     display: block !important;
                     position: fixed;
                     top: 0; left: 0;
                     width: 100vw; height: 100vh;
-                    background: #fff;
-                    margin: 0 !important;
-                    padding: 0 !important;
+                    background: #F5F5F0;
+                    margin: 0; padding: 0;
                     overflow: hidden;
                 }
                 
-                /* 卡片内容区 */
                 .print-card-content {
                     width: 10cm;
                     height: 14cm;
                     margin: 0 auto;
-                    background: #fff;
-                    padding: 0.5cm;
+                    background: #F5F5F0;
+                    padding: 0.4cm;
                     box-sizing: border-box;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    text-align: center;
                     font-family: "Helvetica Neue", Arial, sans-serif;
                 }
                 
-                /* 顶部标签 */
-                .print-card-content .result-label {
-                    font-size: 7pt;
-                    color: #999;
-                    letter-spacing: 0.2em;
-                    text-transform: uppercase;
+                /* 顶部区域 */
+                .print-header {
+                    text-align: center;
+                    margin-bottom: 0.3cm;
+                }
+                
+                .print-header .drink-img {
+                    width: 2.5cm;
+                    height: auto;
                     margin-bottom: 0.2cm;
                 }
                 
-                /* 饮品图片 */
-                .print-card-content .drink-img {
-                    width: 1.8cm;
-                    height: auto;
-                    margin: 0.2cm 0;
-                }
-                
-                /* 饮品名称 - 大标题 */
-                .print-card-content h1 {
-                    font-size: 20pt !important;
-                    margin: 0.1cm 0 !important;
+                .print-header h1 {
+                    font-size: 22pt !important;
+                    margin: 0 0 0.1cm 0 !important;
                     font-weight: 500;
                     color: #000;
                     letter-spacing: 0.05em;
                 }
                 
-                /* 纳音 - 小字 */
-                .print-card-content .nayin {
-                    font-size: 8pt;
+                .print-header .nayin {
+                    font-size: 10pt;
                     color: #666;
-                    margin: 0.05cm 0 0.15cm 0;
+                    margin: 0.05cm 0;
                 }
                 
-                /* 五行分布 */
-                .print-card-content .wuxing {
-                    font-size: 9pt;
-                    color: #333;
-                    margin: 0 0 0.2cm 0;
-                    letter-spacing: 0.15em;
-                }
-                
-                /* 分隔线 */
-                .print-card-content .divider {
-                    width: 100%;
-                    height: 1px;
-                    background: #000;
-                    margin: 0.15cm 0;
-                }
-                
-                /* 区块标题 */
-                .print-card-content h3 {
-                    font-size: 7pt !important;
-                    color: #999;
-                    margin: 0.1cm 0 !important;
-                    font-weight: 400;
+                .print-header .wuxing {
+                    font-size: 10pt;
+                    color: #4a7c59;
+                    margin: 0;
                     letter-spacing: 0.1em;
-                    text-transform: uppercase;
+                }
+                
+                /* 中间两栏区域 */
+                .print-body {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 0.3cm;
+                    width: 100%;
+                    flex: 1;
+                }
+                
+                .print-body .left-col,
+                .print-body .right-col {
+                    border: 1px solid #333;
+                    padding: 0.2cm;
+                    display: flex;
+                    flex-direction: column;
+                }
+                
+                .col-title {
+                    font-size: 8pt;
+                    font-weight: 600;
+                    text-align: center;
+                    margin-bottom: 0.1cm;
+                    color: #000;
                 }
                 
                 /* 雷达图 */
-                .print-card-content .radar-img {
+                .radar-container {
+                    flex: 1;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .radar-container svg,
+                .radar-container canvas {
                     max-width: 3cm !important;
                     max-height: 3cm !important;
-                    margin: 0.1cm 0;
                 }
                 
-                /* 气泡温度 - 网格布局 */
-                .print-card-content .properties {
+                /* 五行图例 */
+                .wuxing-legend {
                     display: flex;
                     justify-content: center;
-                    gap: 1.5cm;
+                    gap: 0.2cm;
+                    font-size: 7pt;
                     margin: 0.1cm 0;
-                    width: 100%;
                 }
                 
-                .print-card-content .property-item {
+                .wuxing-legend span {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.05cm;
+                }
+                
+                .wuxing-legend .dot {
+                    width: 0.15cm;
+                    height: 0.15cm;
+                    border-radius: 50%;
+                    display: inline-block;
+                }
+                
+                /* 气泡温度 */
+                .properties {
+                    display: flex;
+                    justify-content: center;
+                    gap: 0.5cm;
+                    border-top: 1px solid #ddd;
+                    padding-top: 0.1cm;
+                    margin-top: 0.1cm;
+                }
+                
+                .property-item {
                     text-align: center;
                 }
                 
-                .print-card-content .property-label {
+                .property-label {
                     font-size: 6pt;
                     color: #999;
-                    margin-bottom: 0.05cm;
                 }
                 
-                .print-card-content .property-value {
-                    font-size: 9pt;
+                .property-value {
+                    font-size: 8pt;
                     color: #000;
                     font-weight: 500;
                 }
                 
-                /* 描述文案 */
-                .print-card-content .desc {
+                /* 右栏内容 */
+                .desc-box {
+                    border-bottom: 1px solid #ddd;
+                    padding-bottom: 0.15cm;
+                    margin-bottom: 0.15cm;
+                }
+                
+                .desc-box p {
                     font-size: 8pt;
-                    line-height: 1.5;
-                    color: #333;
-                    margin: 0.15cm 0;
-                    padding: 0 0.3cm;
-                }
-                
-                /* 洞察 */
-                .print-card-content .insight {
-                    font-size: 7pt;
                     line-height: 1.4;
-                    color: #666;
-                    margin: 0.1cm 0;
-                    padding: 0 0.3cm;
-                    font-style: italic;
+                    color: #333;
+                    margin: 0;
                 }
                 
-                /* 最佳伴侣区块 */
-                .print-card-content .partner-section {
-                    width: 100%;
-                    border-top: 1px solid #000;
-                    border-bottom: 1px solid #000;
-                    padding: 0.15cm 0;
-                    margin: 0.15cm 0;
+                .insight-box {
+                    border-bottom: 1px solid #ddd;
+                    padding-bottom: 0.15cm;
+                    margin-bottom: 0.15cm;
+                }
+                
+                .insight-box p {
+                    font-size: 7pt;
+                    line-height: 1.3;
+                    color: #666;
+                    margin: 0;
+                }
+                
+                .insight-box .bulb {
+                    color: #f0c040;
+                }
+                
+                /* 最佳伴侣 */
+                .partner-title {
+                    font-size: 8pt;
+                    color: #e07070;
+                    margin-bottom: 0.1cm;
+                }
+                
+                .partner-title .heart {
+                    color: #e07070;
+                }
+                
+                .partner-content {
                     display: flex;
                     align-items: center;
-                    justify-content: center;
-                    gap: 0.3cm;
+                    gap: 0.2cm;
+                    border: 1px solid #333;
+                    padding: 0.1cm;
                 }
                 
-                .print-card-content .partner-section img {
+                .partner-content img {
                     width: 0.8cm;
                     height: auto;
                 }
                 
-                .print-card-content .partner-info {
-                    text-align: left;
+                .partner-info {
+                    flex: 1;
                 }
                 
-                .print-card-content .partner-name {
+                .partner-name {
                     font-size: 9pt;
                     color: #000;
                     font-weight: 500;
                 }
                 
-                .print-card-content .partner-nayin {
+                .partner-nayin {
                     font-size: 7pt;
                     color: #999;
                 }
                 
-                /* 音乐 */
-                .print-card-content .music {
+                .match-btn {
+                    border: 1px solid #333;
+                    padding: 0.05cm 0.15cm;
                     font-size: 7pt;
-                    color: #666;
-                    margin: 0.1cm 0;
+                    background: #fff;
                 }
                 
                 /* 底部 */
-                .print-card-footer {
+                .print-footer {
                     font-size: 6pt;
                     color: #bbb;
-                    margin-top: auto;
-                    padding-top: 0.2cm;
-                    letter-spacing: 0.1em;
+                    margin-top: 0.2cm;
+                    text-align: center;
                 }
             }
         `;
@@ -254,10 +293,11 @@
         return drinks.some(d => bodyText.includes(d)) && bodyText.includes('纳音');
     }
     
-    // 过滤无关文本
+    // 过滤无效文本
     function isValidText(text) {
-        const invalidPatterns = ['测试', 'RESULT', 'Question', 'Result', '的', ' '];
-        return text.length > 0 && !invalidPatterns.some(p => text === p || text.startsWith(p));
+        if (!text || text.trim().length === 0) return false;
+        const invalidPatterns = ['测试', 'RESULT', 'Question', 'Result', '的'];
+        return !invalidPatterns.some(p => text.includes(p));
     }
     
     // 克隆结果页内容并重新排版
@@ -275,17 +315,14 @@
             return;
         }
         
-        // 获取所有元素
         const allP = Array.from(root.querySelectorAll('p'));
         const h3s = Array.from(root.querySelectorAll('h3'));
         
-        // 1. RESULT 标签
-        const resultLabel = document.createElement('div');
-        resultLabel.className = 'result-label';
-        resultLabel.textContent = 'Result';
-        cardContent.appendChild(resultLabel);
+        // ===== 顶部区域 =====
+        const header = document.createElement('div');
+        header.className = 'print-header';
         
-        // 2. 饮品图片 - 找第一个大图（排除小图标）
+        // 饮品图片
         const allImgs = Array.from(root.querySelectorAll('img'));
         const drinkImg = allImgs.find(img => {
             const rect = img.getBoundingClientRect();
@@ -296,70 +333,92 @@
             img.src = drinkImg.src;
             img.alt = drinkImg.alt || '';
             img.className = 'drink-img';
-            cardContent.appendChild(img);
+            header.appendChild(img);
         }
         
-        // 3. 饮品名称
+        // 饮品名称
         const h1 = root.querySelector('h1');
         if (h1 && isValidText(h1.textContent)) {
             const name = document.createElement('h1');
             name.textContent = h1.textContent;
-            cardContent.appendChild(name);
+            header.appendChild(name);
         }
         
-        // 4. 纳音
+        // 纳音
         const nayinP = allP.find(p => p.textContent.includes('纳音'));
         if (nayinP && isValidText(nayinP.textContent)) {
             const nayin = document.createElement('p');
             nayin.className = 'nayin';
             nayin.textContent = nayinP.textContent;
-            cardContent.appendChild(nayin);
+            header.appendChild(nayin);
         }
         
-        // 5. 五行分布
+        // 五行分布
         const wuxingP = allP.find(p => /[木火土金水]\d/.test(p.textContent));
         if (wuxingP && isValidText(wuxingP.textContent)) {
             const wuxing = document.createElement('p');
             wuxing.className = 'wuxing';
             wuxing.textContent = wuxingP.textContent;
-            cardContent.appendChild(wuxing);
+            header.appendChild(wuxing);
         }
         
-        // 分隔线
-        const divider1 = document.createElement('div');
-        divider1.className = 'divider';
-        cardContent.appendChild(divider1);
+        cardContent.appendChild(header);
         
-        // 6. 五行属性分布
+        // ===== 中间两栏区域 =====
+        const body = document.createElement('div');
+        body.className = 'print-body';
+        
+        // 左栏
+        const leftCol = document.createElement('div');
+        leftCol.className = 'left-col';
+        
+        // 五行属性分布标题
         const wuxingH3 = h3s.find(h => h.textContent.includes('五行'));
         if (wuxingH3) {
-            const title = document.createElement('h3');
+            const title = document.createElement('div');
+            title.className = 'col-title';
             title.textContent = wuxingH3.textContent;
-            cardContent.appendChild(title);
+            leftCol.appendChild(title);
         }
         
         // 雷达图
         const radar = root.querySelector('svg, canvas');
         if (radar) {
-            console.log('Found radar');
+            const radarContainer = document.createElement('div');
+            radarContainer.className = 'radar-container';
             const radarClone = radar.cloneNode(true);
-            // SVG 不能用 className，用 setAttribute
             if (radarClone.tagName === 'svg' || radarClone.tagName === 'SVG') {
-                radarClone.setAttribute('class', 'radar-img');
-            } else {
-                radarClone.className = 'radar-img';
+                radarClone.setAttribute('class', '');
             }
             radarClone.style.maxWidth = '3cm';
             radarClone.style.maxHeight = '3cm';
-            cardContent.appendChild(radarClone);
+            radarContainer.appendChild(radarClone);
+            leftCol.appendChild(radarContainer);
         }
         
-        // 分隔线
-        const divider2 = document.createElement('div');
-        divider2.className = 'divider';
-        cardContent.appendChild(divider2);
+        // 五行图例
+        const legendContainer = document.createElement('div');
+        legendContainer.className = 'wuxing-legend';
+        const wuxingMatch = root.innerText.match(/([木火土金水]\d)/g);
+        if (wuxingMatch) {
+            const colors = {
+                '木': '#4a7c59',
+                '火': '#c45533',
+                '土': '#b8956a',
+                '金': '#8a8a8a',
+                '水': '#4a6fa5'
+            };
+            wuxingMatch.forEach(item => {
+                const element = item[0];
+                const num = item[1];
+                const span = document.createElement('span');
+                span.innerHTML = `<span class="dot" style="background:${colors[element] || '#333'}"></span> ${element} ${num}`;
+                legendContainer.appendChild(span);
+            });
+        }
+        leftCol.appendChild(legendContainer);
         
-        // 7. 气泡温度
+        // 气泡温度
         const allText = root.innerText;
         const bubbleMatch = allText.match(/气泡[\s\n]*([^\n]+)/);
         const tempMatch = allText.match(/温度[\s\n]*([^\n]+)/);
@@ -388,12 +447,16 @@
                 props.appendChild(item);
             }
             
-            if (props.children.length > 0) {
-                cardContent.appendChild(props);
-            }
+            leftCol.appendChild(props);
         }
         
-        // 8. 描述文案
+        body.appendChild(leftCol);
+        
+        // 右栏
+        const rightCol = document.createElement('div');
+        rightCol.className = 'right-col';
+        
+        // 描述文案
         const descP = allP.find(p => {
             const text = p.textContent.trim();
             return text.length > 20 
@@ -409,31 +472,35 @@
                 && !text.includes('RESULT');
         });
         if (descP && isValidText(descP.textContent)) {
-            const desc = document.createElement('p');
-            desc.className = 'desc';
-            desc.textContent = descP.textContent;
-            cardContent.appendChild(desc);
+            const descBox = document.createElement('div');
+            descBox.className = 'desc-box';
+            const p = document.createElement('p');
+            p.textContent = descP.textContent;
+            descBox.appendChild(p);
+            rightCol.appendChild(descBox);
         }
         
-        // 9. 洞察
+        // 洞察
         const insightP = allP.find(p => p.textContent.includes('建议') || p.textContent.includes('优势') || p.textContent.includes('能力'));
         if (insightP && isValidText(insightP.textContent)) {
-            const insight = document.createElement('p');
-            insight.className = 'insight';
-            insight.textContent = insightP.textContent.replace('💡', '').trim();
-            cardContent.appendChild(insight);
+            const insightBox = document.createElement('div');
+            insightBox.className = 'insight-box';
+            const p = document.createElement('p');
+            p.innerHTML = '<span class="bulb">💡</span> ' + insightP.textContent.replace('💡', '').trim();
+            insightBox.appendChild(p);
+            rightCol.appendChild(insightBox);
         }
         
-        // 分隔线
-        const divider3 = document.createElement('div');
-        divider3.className = 'divider';
-        cardContent.appendChild(divider3);
-        
-        // 10. 最佳伴侣
+        // 最佳伴侣
         const partnerH3 = h3s.find(h => h.textContent.includes('伴侣'));
         if (partnerH3) {
-            const partnerSection = document.createElement('div');
-            partnerSection.className = 'partner-section';
+            const partnerTitle = document.createElement('div');
+            partnerTitle.className = 'partner-title';
+            partnerTitle.innerHTML = '<span class="heart">💕</span> 最佳伴侣';
+            rightCol.appendChild(partnerTitle);
+            
+            const partnerContent = document.createElement('div');
+            partnerContent.className = 'partner-content';
             
             // 找伴侣图片
             let nextEl = partnerH3.nextElementSibling;
@@ -444,14 +511,13 @@
                 const partnerImg = document.createElement('img');
                 partnerImg.src = nextEl.src;
                 partnerImg.alt = nextEl.alt || '';
-                partnerSection.appendChild(partnerImg);
+                partnerContent.appendChild(partnerImg);
             }
             
             // 伴侣信息
             const partnerInfo = document.createElement('div');
             partnerInfo.className = 'partner-info';
             
-            // 找伴侣名称
             let nameEl = partnerH3.nextElementSibling;
             while (nameEl && nameEl.tagName !== 'P') {
                 nameEl = nameEl.nextElementSibling;
@@ -462,7 +528,6 @@
                 partnerName.textContent = nameEl.textContent;
                 partnerInfo.appendChild(partnerName);
                 
-                // 找伴侣纳音
                 let nayinEl = nameEl.nextElementSibling;
                 if (nayinEl && nayinEl.textContent.includes('纳音')) {
                     const partnerNayin = document.createElement('div');
@@ -472,28 +537,23 @@
                 }
             }
             
-            partnerSection.appendChild(partnerInfo);
-            cardContent.appendChild(partnerSection);
+            partnerContent.appendChild(partnerInfo);
+            
+            // 合拍按钮
+            const matchBtn = document.createElement('span');
+            matchBtn.className = 'match-btn';
+            matchBtn.textContent = '合拍';
+            partnerContent.appendChild(matchBtn);
+            
+            rightCol.appendChild(partnerContent);
         }
         
-        // 11. 本命音乐
-        const musicH3 = h3s.find(h => h.textContent.includes('音乐'));
-        if (musicH3) {
-            let nextEl = musicH3.nextElementSibling;
-            while (nextEl && nextEl.tagName !== 'P') {
-                nextEl = nextEl.nextElementSibling;
-            }
-            if (nextEl && isValidText(nextEl.textContent)) {
-                const music = document.createElement('p');
-                music.className = 'music';
-                music.textContent = '🎵 ' + nextEl.textContent;
-                cardContent.appendChild(music);
-            }
-        }
+        body.appendChild(rightCol);
+        cardContent.appendChild(body);
         
         // 底部
         const footer = document.createElement('div');
-        footer.className = 'print-card-footer';
+        footer.className = 'print-footer';
         footer.textContent = '五行纳音 · 本命饮品';
         cardContent.appendChild(footer);
         
