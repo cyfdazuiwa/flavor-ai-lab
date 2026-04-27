@@ -333,8 +333,16 @@
         // 雷达图
         const radar = root.querySelector('svg, canvas');
         if (radar) {
+            console.log('Found radar');
             const radarClone = radar.cloneNode(true);
-            radarClone.className = 'radar-img';
+            // SVG 不能用 className，用 setAttribute
+            if (radarClone.tagName === 'svg' || radarClone.tagName === 'SVG') {
+                radarClone.setAttribute('class', 'radar-img');
+            } else {
+                radarClone.className = 'radar-img';
+            }
+            radarClone.style.maxWidth = '3cm';
+            radarClone.style.maxHeight = '3cm';
             cardContent.appendChild(radarClone);
         }
         
