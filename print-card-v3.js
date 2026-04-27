@@ -48,9 +48,25 @@
             .print-only { display: none !important; }
             
             @media print {
+                /* 去掉默认页眉页脚 */
                 @page {
                     size: 10cm 14cm;
                     margin: 0;
+                }
+                
+                /* 强制去掉浏览器默认页眉页脚 */
+                @page :first {
+                    margin-top: 0;
+                }
+                
+                @page :left {
+                    margin-left: 0;
+                    margin-right: 0;
+                }
+                
+                @page :right {
+                    margin-left: 0;
+                    margin-right: 0;
                 }
                 
                 body > *:not(.print-only) { display: none !important; }
@@ -281,8 +297,9 @@
         resultLabel.textContent = 'Result';
         cardContent.appendChild(resultLabel);
         
-        // 2. 饮品图片
-        const drinkImg = root.querySelector('img[alt]');
+        // 2. 饮品图片 - 找第一个有 alt 且不是小图标的图片
+        const allImgs = Array.from(root.querySelectorAll('img'));
+        const drinkImg = allImgs.find(img => img.alt && img.alt.length > 0 && !img.alt.includes('icon') && img.width > 50);
         if (drinkImg) {
             const img = document.createElement('img');
             img.src = drinkImg.src;
@@ -413,9 +430,10 @@
             cardContent.appendChild(desc);
         }
         
-        // 9. 洞察
-        const insightP = allP.find(p => p.textContent.includes('💡') || p.textContent.includes('建议'));
+        // 9. 洞察 - 找包含"建议"或"优势"的段落（排除含💡的，因为已经处理过）
+        const insightP = allP.find(p => p.textContent.includes('建议') || p.textContent.includes('优势') || p.textContent.includes('能力'));
         if (insightP) {
+            console.log('Found insight:', insightP.textContent.substring(0, 50));
             const insight = document.createElement('p');
             insight.className = 'insight';
             insight.textContent = insightP.textContent.replace('💡', '').trim();
