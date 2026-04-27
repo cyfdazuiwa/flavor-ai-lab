@@ -49,7 +49,7 @@
             
             @media print {
                 @page {
-                    size: 10cm 14cm;
+                    size: A5;
                     margin: 0;
                 }
                 
