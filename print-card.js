@@ -46,7 +46,7 @@
                 <div class="print-card-body">
                     <p id="print-desc"></p>
                     <div class="print-partner">
-                        <span class="print-label">💕 最佳伴侣</span>
+                        <span class="print-label">最佳伴侣</span>
                         <div id="print-partner-content"></div>
                     </div>
                 </div>
@@ -80,91 +80,104 @@
                 .print-card-inner {
                     width: 10cm;
                     height: 14cm;
-                    background: #fff;
-                    padding: 1cm;
+                    background: #F7F5F0;
+                    padding: 0.8cm;
                     box-sizing: border-box;
                     display: flex;
                     flex-direction: column;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                    align-items: center;
+                    text-align: center;
                 }
                 
                 .print-card-header {
-                    text-align: center;
-                    margin-bottom: 0.5cm;
+                    width: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    margin-bottom: 0.4cm;
                 }
                 
                 .print-card-header img {
-                    width: 2.2cm;
+                    width: 3cm;
                     height: auto;
-                    margin-bottom: 0.2cm;
+                    margin-bottom: 0.3cm;
                 }
                 
                 .print-card-header h2 {
-                    font-size: 16pt;
-                    margin: 0 0 0.15cm 0;
+                    font-size: 22pt;
+                    margin: 0 0 0.2cm 0;
                     font-weight: 600;
                     color: #333;
+                    letter-spacing: 0.05em;
                 }
                 
                 #print-nayin {
-                    font-size: 9pt;
+                    font-size: 11pt;
                     color: #666;
-                    margin: 0 0 0.2cm 0;
+                    margin: 0 0 0.15cm 0;
                 }
                 
                 #print-wuxing {
-                    font-size: 8pt;
+                    font-size: 10pt;
                     color: #888;
                     margin: 0;
+                    letter-spacing: 0.1em;
                 }
                 
                 .print-card-body {
+                    width: 100%;
                     flex: 1;
                     display: flex;
                     flex-direction: column;
-                    gap: 0.4cm;
+                    justify-content: center;
+                    gap: 0.5cm;
                 }
                 
                 #print-desc {
-                    font-size: 9pt;
-                    line-height: 1.5;
+                    font-size: 11pt;
+                    line-height: 1.6;
                     color: #333;
                     margin: 0;
+                    padding: 0 0.3cm;
                 }
                 
                 .print-partner {
-                    border-top: 1px solid #eee;
-                    padding-top: 0.3cm;
+                    border-top: 1px solid #ddd;
+                    padding-top: 0.4cm;
+                    margin-top: 0.2cm;
                 }
                 
                 .print-label {
-                    font-size: 8pt;
+                    font-size: 9pt;
                     color: #999;
                     display: block;
-                    margin-bottom: 0.15cm;
+                    margin-bottom: 0.2cm;
+                    letter-spacing: 0.1em;
                 }
                 
                 #print-partner-content {
                     display: flex;
                     align-items: center;
+                    justify-content: center;
                     gap: 0.3cm;
                 }
                 
                 #print-partner-content img {
-                    width: 1cm;
+                    width: 1.5cm;
                     height: auto;
                 }
                 
                 #print-partner-content span {
-                    font-size: 9pt;
+                    font-size: 11pt;
                     color: #333;
+                    font-weight: 500;
                 }
                 
                 .print-card-footer {
-                    text-align: center;
-                    font-size: 7pt;
+                    font-size: 8pt;
                     color: #bbb;
                     margin-top: 0.3cm;
+                    letter-spacing: 0.05em;
                 }
                 
                 @page {
@@ -205,36 +218,42 @@
         const nameEl = document.querySelector('h1, h2, .text-2xl, .text-xl, [class*="title"]');
         if (nameEl) data.name = nameEl.textContent.trim();
         
-        // 饮品图片 - 找页面里最大的图片或特定路径
+        // 饮品图片 - 找页面里最大的图片
         const allImgs = Array.from(document.querySelectorAll('img'));
-        // 优先找饮品相关图片
+        // 优先找饮品相关图片（排除小图标）
         const drinkImg = allImgs.find(img => 
-            img.src.includes('drink') || 
-            img.src.includes('product') ||
-            img.alt.includes('饮品') ||
-            img.width > 100
+            (img.src.includes('drink') || img.src.includes('product') || img.width > 80) 
+            && !img.src.includes('icon')
         );
         if (drinkImg) data.img = drinkImg.src;
+        
+        // 如果没找到，找第一个大图
+        if (!data.img) {
+            const largeImg = allImgs.find(img => img.width > 100 && img.height > 100);
+            if (largeImg) data.img = largeImg.src;
+        }
         
         // 纳音 - 从文本匹配
         const nayinMatch = bodyText.match(/纳音[：:]\s*([^\n]+)/);
         if (nayinMatch) data.nayin = nayinMatch[1].trim();
         
-        // 五行分布 - 找五行相关文本
-        const wuxingMatch = bodyText.match(/五行[：:]\s*([^\n]+)/);
+        // 五行分布 - 找五行相关文本（如"木1 火2 土5 水2"）
+        const wuxingMatch = bodyText.match(/([木火土金水]\d+\s*)+/);
         if (wuxingMatch) {
-            data.wuxing = wuxingMatch[1].trim();
-        } else {
-            // 尝试找五行相关的元素文本
-            const wuxingEl = document.querySelector('[class*="wuxing"], [class*="element"]');
-            if (wuxingEl) data.wuxing = wuxingEl.textContent.trim();
+            data.wuxing = wuxingMatch[0].trim();
         }
         
-        // 描述文案 - 找较长的段落文本
-        const paragraphs = Array.from(document.querySelectorAll('p, [class*="desc"], [class*="text"]'));
+        // 描述文案 - 找较长的段落文本（排除已知的非描述文本）
+        const paragraphs = Array.from(document.querySelectorAll('p, div, span'));
         const descEl = paragraphs.find(p => {
             const text = p.textContent.trim();
-            return text.length > 20 && text.length < 200 && !text.includes('纳音');
+            return text.length > 15 
+                && text.length < 150 
+                && !text.includes('纳音')
+                && !text.includes('五行')
+                && !text.includes('伴侣')
+                && !text.includes('气泡')
+                && !text.includes('温度');
         });
         if (descEl) data.desc = descEl.textContent.trim();
         
@@ -248,13 +267,13 @@
         if (partnerSection) {
             // 在伴侣区域内找图片和名称
             const partnerImgs = partnerSection.querySelectorAll('img');
-            const partnerTexts = partnerSection.querySelectorAll('span, h3, h4, p, div');
+            const partnerTexts = Array.from(partnerSection.querySelectorAll('span, h3, h4, p, div'));
             
             // 找第一个有 src 的图片
             const partnerImg = Array.from(partnerImgs).find(img => img.src && !img.src.includes('data:'));
             
             // 找伴侣名称（排除"最佳伴侣"标签本身）
-            const partnerNameEl = Array.from(partnerTexts).find(el => {
+            const partnerNameEl = partnerTexts.find(el => {
                 const text = el.textContent.trim();
                 return text.length > 0 && text.length < 20 && !text.includes('伴侣') && !text.includes('合拍');
             });
