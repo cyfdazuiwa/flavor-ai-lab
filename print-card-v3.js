@@ -78,6 +78,31 @@
                     font-family: "Helvetica Neue", Arial, sans-serif;
                 }
                 
+                /* 木 - 绿色 */
+                .print-card-content[data-wuxing="木"] {
+                    background: #E8F5E9;
+                }
+                
+                /* 火 - 红色 */
+                .print-card-content[data-wuxing="火"] {
+                    background: #FFEBEE;
+                }
+                
+                /* 土 - 黄色 */
+                .print-card-content[data-wuxing="土"] {
+                    background: #FFF8E1;
+                }
+                
+                /* 金 - 金色 */
+                .print-card-content[data-wuxing="金"] {
+                    background: #FFFDE7;
+                }
+                
+                /* 水 - 蓝色 */
+                .print-card-content[data-wuxing="水"] {
+                    background: #E3F2FD;
+                }
+                
                 /* 顶部区域 */
                 .print-header {
                     text-align: center;
@@ -362,7 +387,18 @@
             header.appendChild(wuxing);
         }
         
-        cardContent.appendChild(header);
+        // 判断主五行属性
+        let mainWuxing = '';
+        const wuxingMatch = root.innerText.match(/([木火土金水])\d/);
+        if (wuxingMatch) {
+            mainWuxing = wuxingMatch[1];
+            console.log('Main wuxing:', mainWuxing);
+        }
+        
+        // 设置五行属性
+        if (mainWuxing) {
+            cardContent.setAttribute('data-wuxing', mainWuxing);
+        }
         
         // ===== 中间两栏区域 =====
         const body = document.createElement('div');
