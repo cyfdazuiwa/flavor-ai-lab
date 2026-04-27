@@ -52,6 +52,12 @@
                 /* 隐藏原页面 */
                 body > *:not(.print-only) { display: none !important; }
                 
+                /* 去掉默认页眉页脚 */
+                @page {
+                    size: 10cm 14cm;
+                    margin: 0;
+                }
+                
                 /* 显示打印容器 */
                 .print-only {
                     display: block !important;
@@ -69,7 +75,7 @@
                     height: 14cm;
                     margin: 0 auto;
                     background: #F7F5F0;
-                    padding: 0.6cm;
+                    padding: 0.5cm;
                     box-sizing: border-box;
                     display: flex;
                     flex-direction: column;
@@ -78,92 +84,80 @@
                 }
                 
                 /* 饮品图片 */
-                .print-card-content .drink-image {
-                    width: 2.5cm;
+                .print-card-content img:first-child {
+                    width: 2.2cm;
                     height: auto;
-                    margin-bottom: 0.3cm;
+                    margin-bottom: 0.2cm;
                 }
                 
                 /* 饮品名称 */
                 .print-card-content h1,
-                .print-card-content h2,
-                .print-card-content .drink-name {
-                    font-size: 20pt !important;
-                    margin: 0 0 0.2cm 0 !important;
+                .print-card-content h2 {
+                    font-size: 18pt !important;
+                    margin: 0 0 0.15cm 0 !important;
                     font-weight: 600;
                     color: #333;
                 }
                 
                 /* 纳音 */
-                .print-card-content .nayin {
-                    font-size: 10pt;
+                .print-card-content .nayin,
+                .print-card-content [class*="nayin"] {
+                    font-size: 9pt;
                     color: #666;
-                    margin: 0 0 0.15cm 0;
+                    margin: 0 0 0.1cm 0;
                 }
                 
                 /* 五行分布 */
-                .print-card-content .wuxing {
-                    font-size: 9pt;
+                .print-card-content .wuxing,
+                .print-card-content [class*="wuxing"] {
+                    font-size: 8pt;
                     color: #888;
-                    margin: 0 0 0.3cm 0;
-                    letter-spacing: 0.1em;
+                    margin: 0 0 0.2cm 0;
                 }
                 
-                /* 雷达图区域 - 缩小 */
-                .print-card-content .radar-chart,
+                /* 雷达图 */
                 .print-card-content canvas,
                 .print-card-content svg {
-                    max-width: 4cm !important;
-                    max-height: 4cm !important;
-                    margin: 0.2cm 0;
+                    max-width: 3cm !important;
+                    max-height: 3cm !important;
+                    margin: 0.1cm 0;
                 }
                 
                 /* 气泡温度 */
-                .print-card-content .properties {
-                    display: flex;
-                    justify-content: center;
-                    gap: 1cm;
-                    margin: 0.2cm 0;
-                    font-size: 9pt;
+                .print-card-content [class*="bubble"],
+                .print-card-content [class*="temp"] {
+                    font-size: 8pt;
+                    margin: 0.1cm 0;
                 }
                 
                 /* 描述文案 */
-                .print-card-content .description {
-                    font-size: 9pt;
-                    line-height: 1.5;
+                .print-card-content p,
+                .print-card-content [class*="desc"] {
+                    font-size: 8pt;
+                    line-height: 1.4;
                     color: #333;
-                    margin: 0.3cm 0;
+                    margin: 0.2cm 0;
                     padding: 0 0.2cm;
                 }
                 
                 /* 最佳伴侣 */
-                .print-card-content .partner {
+                .print-card-content [class*="partner"],
+                .print-card-content [class*="match"] {
                     border-top: 1px solid #ddd;
-                    padding-top: 0.3cm;
+                    padding-top: 0.2cm;
                     margin-top: 0.2cm;
                     width: 100%;
                 }
                 
-                .print-card-content .partner-label {
-                    font-size: 8pt;
-                    color: #999;
-                    margin-bottom: 0.15cm;
-                }
-                
-                .print-card-content .partner-content {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 0.3cm;
-                }
-                
-                .print-card-content .partner-content img {
-                    width: 1.2cm;
+                .print-card-content [class*="partner"] img,
+                .print-card-content [class*="match"] img {
+                    width: 1cm;
                     height: auto;
                 }
                 
-                .print-card-content .partner-content span {
-                    font-size: 10pt;
+                .print-card-content [class*="partner"] span,
+                .print-card-content [class*="match"] span {
+                    font-size: 9pt;
                     color: #333;
                 }
                 
@@ -172,12 +166,7 @@
                     font-size: 7pt;
                     color: #bbb;
                     margin-top: auto;
-                    padding-top: 0.3cm;
-                }
-                
-                @page {
-                    size: 10cm 14cm;
-                    margin: 0;
+                    padding-top: 0.2cm;
                 }
             }
         `;
