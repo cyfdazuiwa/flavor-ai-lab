@@ -502,38 +502,75 @@
             const partnerContent = document.createElement('div');
             partnerContent.className = 'partner-content';
             
-            // 找伴侣图片
+            // 找伴侣图片 - 遍历后面的元素
+            let imgFound = false;
             let nextEl = partnerH3.nextElementSibling;
-            while (nextEl && nextEl.tagName !== 'IMG') {
+            while (nextEl) {
+                if (nextEl.tagName === 'IMG') {
+                    const partnerImg = document.createElement('img');
+                    partnerImg.src = nextEl.src;
+                    partnerImg.alt = nextEl.alt || '';
+                    partnerContent.appendChild(partnerImg);
+                    imgFound = true;
+                    break;
+                }
+                // 如果下一个元素是容器，在里面找图片
+                if (nextEl.querySelector) {
+                    const innerImg = nextEl.querySelector('img');
+                    if (innerImg) {
+                        const partnerImg = document.createElement('img');
+                        partnerImg.src = innerImg.src;
+                        partnerImg.alt = innerImg.alt || '';
+                        partnerContent.appendChild(partnerImg);
+                        imgFound = true;
+                        break;
+                    }
+                }
                 nextEl = nextEl.nextElementSibling;
-            }
-            if (nextEl && nextEl.tagName === 'IMG') {
-                const partnerImg = document.createElement('img');
-                partnerImg.src = nextEl.src;
-                partnerImg.alt = nextEl.alt || '';
-                partnerContent.appendChild(partnerImg);
             }
             
             // 伴侣信息
             const partnerInfo = document.createElement('div');
             partnerInfo.className = 'partner-info';
             
+            // 找伴侣名称 - 遍历后面的元素找文本
+            let nameFound = false;
             let nameEl = partnerH3.nextElementSibling;
-            while (nameEl && nameEl.tagName !== 'P') {
+            while (nameEl) {
+                if (nameEl.textContent && nameEl.textContent.trim().length > 0) {
+                    const text = nameEl.textContent.trim();
+                    if (text !== '' && !text.includes('💕') && !text.includes('伴侣') && nameEl.tagName !== 'IMG') {
+                        const partnerName = document.createElement('div');
+                        partnerName.className = 'partner-name';
+                        partnerName.textContent = text;
+                        partnerInfo.appendChild(partnerName);
+                        nameFound = true;
+                        
+                        // 找伴侣纳音
+                        let nayinEl = nameEl.nextElementSibling;
+                        if (nayinEl && nayinEl.textContent && nayinEl.textContent.includes('纳音')) {
+                            const partnerNayin = document.createElement('div');
+                            partnerNayin.className = 'partner-nayin';
+                            partnerNayin.textContent = nayinEl.textContent;
+                            partnerInfo.appendChild(partnerNayin);
+                        }
+                        break;
+                    }
+                }
                 nameEl = nameEl.nextElementSibling;
             }
-            if (nameEl && isValidText(nameEl.textContent)) {
-                const partnerName = document.createElement('div');
-                partnerName.className = 'partner-name';
-                partnerName.textContent = nameEl.textContent;
-                partnerInfo.appendChild(partnerName);
-                
-                let nayinEl = nameEl.nextElementSibling;
-                if (nayinEl && nayinEl.textContent.includes('纳音')) {
-                    const partnerNayin = document.createElement('div');
-                    partnerNayin.className = 'partner-nayin';
-                    partnerNayin.textContent = nayinEl.textContent;
-                    partnerInfo.appendChild(partnerNayin);
+            
+            if (!nameFound) {
+                // 备用方案
+                const partnerNameP = allP.find(p => {
+                    const text = p.textContent.trim();
+                    return text.length > 0 && text.length < 20 && !text.includes('纳音') && !text.includes('测试');
+                });
+                if (partnerNameP) {
+                    const partnerName = document.createElement('div');
+                    partnerName.className = 'partner-name';
+                    partnerName.textContent = partnerNameP.textContent;
+                    partnerInfo.appendChild(partnerName);
                 }
             }
             
