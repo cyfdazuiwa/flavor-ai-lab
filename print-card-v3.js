@@ -66,11 +66,11 @@
                 }
                 
                 .print-card-content {
-                    width: 10cm;
-                    height: 14cm;
-                    margin: 0 auto;
+                    width: 100%;
+                    height: 100vh;
+                    margin: 0;
                     background: #F5F5F0;
-                    padding: 0.4cm;
+                    padding: 0.8cm;
                     box-sizing: border-box;
                     display: flex;
                     flex-direction: column;
