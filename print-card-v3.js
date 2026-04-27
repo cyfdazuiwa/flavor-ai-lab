@@ -48,39 +48,29 @@
             .print-only { display: none !important; }
             
             @media print {
-                /* 去掉默认页眉页脚 */
+                /* 强制去掉所有默认边距 */
                 @page {
                     size: 10cm 14cm;
-                    margin: 0;
+                    margin: 0 !important;
+                    padding: 0 !important;
                 }
                 
-                /* 强制去掉浏览器默认页眉页脚 */
-                @page :first {
-                    margin-top: 0;
-                }
-                
-                @page :left {
-                    margin-left: 0;
-                    margin-right: 0;
-                }
-                
-                @page :right {
-                    margin-left: 0;
-                    margin-right: 0;
-                }
-                
+                /* 隐藏原页面 */
                 body > *:not(.print-only) { display: none !important; }
                 
+                /* 打印容器全屏 */
                 .print-only {
                     display: block !important;
                     position: fixed;
                     top: 0; left: 0;
                     width: 100vw; height: 100vh;
                     background: #fff;
-                    margin: 0; padding: 0;
+                    margin: 0 !important;
+                    padding: 0 !important;
                     overflow: hidden;
                 }
                 
+                /* 卡片内容区 */
                 .print-card-content {
                     width: 10cm;
                     height: 14cm;
@@ -157,13 +147,6 @@
                 .print-card-content .radar-img {
                     max-width: 3cm !important;
                     max-height: 3cm !important;
-                    margin: 0.1cm 0;
-                }
-                
-                /* 五行图例 */
-                .print-card-content .wuxing-legend {
-                    font-size: 7pt;
-                    color: #666;
                     margin: 0.1cm 0;
                 }
                 
@@ -271,6 +254,12 @@
         return drinks.some(d => bodyText.includes(d)) && bodyText.includes('纳音');
     }
     
+    // 过滤无关文本
+    function isValidText(text) {
+        const invalidPatterns = ['测试', 'RESULT', 'Question', 'Result', '的', ' '];
+        return text.length > 0 && !invalidPatterns.some(p => text === p || text.startsWith(p));
+    }
+    
     // 克隆结果页内容并重新排版
     function cloneAndReformat() {
         console.log('Cloning and reformatting...');
@@ -287,7 +276,6 @@
         }
         
         // 获取所有元素
-        const allElements = Array.from(root.querySelectorAll('*'));
         const allP = Array.from(root.querySelectorAll('p'));
         const h3s = Array.from(root.querySelectorAll('h3'));
         
@@ -297,20 +285,23 @@
         resultLabel.textContent = 'Result';
         cardContent.appendChild(resultLabel);
         
-        // 2. 饮品图片 - 找第一个有 alt 且不是小图标的图片
+        // 2. 饮品图片 - 找第一个大图（排除小图标）
         const allImgs = Array.from(root.querySelectorAll('img'));
-        const drinkImg = allImgs.find(img => img.alt && img.alt.length > 0 && !img.alt.includes('icon') && img.width > 50);
+        const drinkImg = allImgs.find(img => {
+            const rect = img.getBoundingClientRect();
+            return rect.width > 50 || img.naturalWidth > 50;
+        });
         if (drinkImg) {
             const img = document.createElement('img');
             img.src = drinkImg.src;
-            img.alt = drinkImg.alt;
+            img.alt = drinkImg.alt || '';
             img.className = 'drink-img';
             cardContent.appendChild(img);
         }
         
         // 3. 饮品名称
         const h1 = root.querySelector('h1');
-        if (h1) {
+        if (h1 && isValidText(h1.textContent)) {
             const name = document.createElement('h1');
             name.textContent = h1.textContent;
             cardContent.appendChild(name);
@@ -318,7 +309,7 @@
         
         // 4. 纳音
         const nayinP = allP.find(p => p.textContent.includes('纳音'));
-        if (nayinP) {
+        if (nayinP && isValidText(nayinP.textContent)) {
             const nayin = document.createElement('p');
             nayin.className = 'nayin';
             nayin.textContent = nayinP.textContent;
@@ -327,7 +318,7 @@
         
         // 5. 五行分布
         const wuxingP = allP.find(p => /[木火土金水]\d/.test(p.textContent));
-        if (wuxingP) {
+        if (wuxingP && isValidText(wuxingP.textContent)) {
             const wuxing = document.createElement('p');
             wuxing.className = 'wuxing';
             wuxing.textContent = wuxingP.textContent;
@@ -363,31 +354,21 @@
             cardContent.appendChild(radarClone);
         }
         
-        // 五行图例（如果有）
-        const legend = root.querySelector('[class*="legend"], [class*="color"]');
-        if (legend) {
-            const legendClone = legend.cloneNode(true);
-            legendClone.className = 'wuxing-legend';
-            cardContent.appendChild(legendClone);
-        }
-        
         // 分隔线
         const divider2 = document.createElement('div');
         divider2.className = 'divider';
         cardContent.appendChild(divider2);
         
         // 7. 气泡温度
-        const bubbleP = allP.find(p => p.textContent.includes('气泡') || p.textContent.includes('温度'));
-        if (bubbleP) {
+        const allText = root.innerText;
+        const bubbleMatch = allText.match(/气泡[\s\n]*([^\n]+)/);
+        const tempMatch = allText.match(/温度[\s\n]*([^\n]+)/);
+        
+        if (bubbleMatch || tempMatch) {
             const props = document.createElement('div');
             props.className = 'properties';
             
-            // 找气泡和温度的值
-            const allText = root.innerText;
-            const bubbleMatch = allText.match(/气泡[\s\n]*([^\n]+)/);
-            const tempMatch = allText.match(/温度[\s\n]*([^\n]+)/);
-            
-            if (bubbleMatch) {
+            if (bubbleMatch && isValidText(bubbleMatch[1])) {
                 const item = document.createElement('div');
                 item.className = 'property-item';
                 item.innerHTML = `
@@ -397,7 +378,7 @@
                 props.appendChild(item);
             }
             
-            if (tempMatch) {
+            if (tempMatch && isValidText(tempMatch[1])) {
                 const item = document.createElement('div');
                 item.className = 'property-item';
                 item.innerHTML = `
@@ -407,7 +388,9 @@
                 props.appendChild(item);
             }
             
-            cardContent.appendChild(props);
+            if (props.children.length > 0) {
+                cardContent.appendChild(props);
+            }
         }
         
         // 8. 描述文案
@@ -421,19 +404,20 @@
                 && !text.includes('温度')
                 && !text.includes('伴侣')
                 && !text.includes('音乐')
-                && !text.includes('💡');
+                && !text.includes('💡')
+                && !text.includes('测试')
+                && !text.includes('RESULT');
         });
-        if (descP) {
+        if (descP && isValidText(descP.textContent)) {
             const desc = document.createElement('p');
             desc.className = 'desc';
             desc.textContent = descP.textContent;
             cardContent.appendChild(desc);
         }
         
-        // 9. 洞察 - 找包含"建议"或"优势"的段落（排除含💡的，因为已经处理过）
+        // 9. 洞察
         const insightP = allP.find(p => p.textContent.includes('建议') || p.textContent.includes('优势') || p.textContent.includes('能力'));
-        if (insightP) {
-            console.log('Found insight:', insightP.textContent.substring(0, 50));
+        if (insightP && isValidText(insightP.textContent)) {
             const insight = document.createElement('p');
             insight.className = 'insight';
             insight.textContent = insightP.textContent.replace('💡', '').trim();
@@ -459,7 +443,7 @@
             if (nextEl && nextEl.tagName === 'IMG') {
                 const partnerImg = document.createElement('img');
                 partnerImg.src = nextEl.src;
-                partnerImg.alt = nextEl.alt;
+                partnerImg.alt = nextEl.alt || '';
                 partnerSection.appendChild(partnerImg);
             }
             
@@ -467,12 +451,12 @@
             const partnerInfo = document.createElement('div');
             partnerInfo.className = 'partner-info';
             
-            // 找伴侣名称和纳音
+            // 找伴侣名称
             let nameEl = partnerH3.nextElementSibling;
             while (nameEl && nameEl.tagName !== 'P') {
                 nameEl = nameEl.nextElementSibling;
             }
-            if (nameEl) {
+            if (nameEl && isValidText(nameEl.textContent)) {
                 const partnerName = document.createElement('div');
                 partnerName.className = 'partner-name';
                 partnerName.textContent = nameEl.textContent;
@@ -499,7 +483,7 @@
             while (nextEl && nextEl.tagName !== 'P') {
                 nextEl = nextEl.nextElementSibling;
             }
-            if (nextEl) {
+            if (nextEl && isValidText(nextEl.textContent)) {
                 const music = document.createElement('p');
                 music.className = 'music';
                 music.textContent = '🎵 ' + nextEl.textContent;
