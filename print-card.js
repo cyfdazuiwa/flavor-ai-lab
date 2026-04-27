@@ -193,6 +193,7 @@
     
     // 克隆结果页内容并重新排版
     function cloneAndReformat() {
+        console.log('Cloning and reformatting...');
         const container = document.getElementById('print-card-container');
         container.innerHTML = '';
         
@@ -202,7 +203,12 @@
         
         // 找原页面的关键元素
         const root = document.getElementById('root');
-        if (!root) return;
+        if (!root) {
+            console.error('Root element not found');
+            return;
+        }
+        
+        console.log('Root found, children:', root.children.length);
         
         // 克隆整个结果区域
         const resultClone = root.cloneNode(true);
@@ -211,85 +217,125 @@
         const removeSelectors = 'button, input, nav, .nav, [class*="button"], [class*="input"], [class*="form"]';
         resultClone.querySelectorAll(removeSelectors).forEach(el => el.remove());
         
-        // 重新组织内容
-        // 1. 饮品图片
-        const drinkImg = resultClone.querySelector('img[src*="drink"], img[width="200"], img[width="300"]') ||
-                        resultClone.querySelector('img');
+        // 重新组织内容 - 按顺序添加各个部分
+        
+        // 1. 饮品图片 - 找最大的图片
+        const allImgs = Array.from(resultClone.querySelectorAll('img'));
+        const drinkImg = allImgs.find(img => {
+            const rect = img.getBoundingClientRect ? {width: img.width, height: img.height} : {width: 0, height: 0};
+            return rect.width > 50 || img.naturalWidth > 50;
+        }) || allImgs[0];
+        
         if (drinkImg) {
-            drinkImg.className = 'drink-image';
+            console.log('Found drink image:', drinkImg.src);
+            drinkImg.style.width = '2.5cm';
+            drinkImg.style.height = 'auto';
+            drinkImg.style.marginBottom = '0.3cm';
             cardContent.appendChild(drinkImg);
         }
         
         // 2. 饮品名称
-        const nameEl = resultClone.querySelector('h1, h2, .text-2xl, .text-xl');
+        const nameEl = resultClone.querySelector('h1, h2, .text-2xl, .text-xl, [class*="title"]');
         if (nameEl) {
-            nameEl.className = 'drink-name';
+            console.log('Found name:', nameEl.textContent);
+            nameEl.style.fontSize = '20pt';
+            nameEl.style.margin = '0 0 0.2cm 0';
+            nameEl.style.fontWeight = '600';
             cardContent.appendChild(nameEl);
         }
         
         // 3. 纳音
         const nayinEl = resultClone.querySelector('[class*="nayin"]');
         if (nayinEl) {
-            nayinEl.className = 'nayin';
+            console.log('Found nayin:', nayinEl.textContent);
+            nayinEl.style.fontSize = '10pt';
+            nayinEl.style.color = '#666';
+            nayinEl.style.margin = '0 0 0.15cm 0';
             cardContent.appendChild(nayinEl);
         }
         
         // 4. 五行分布
         const wuxingEl = resultClone.querySelector('[class*="wuxing"], [class*="element"]');
         if (wuxingEl) {
-            wuxingEl.className = 'wuxing';
+            console.log('Found wuxing:', wuxingEl.textContent);
+            wuxingEl.style.fontSize = '9pt';
+            wuxingEl.style.color = '#888';
+            wuxingEl.style.margin = '0 0 0.3cm 0';
             cardContent.appendChild(wuxingEl);
         }
         
         // 5. 雷达图（如果有）
         const radarEl = resultClone.querySelector('canvas, svg, [class*="radar"], [class*="chart"]');
         if (radarEl) {
-            radarEl.className = 'radar-chart';
+            console.log('Found radar chart');
+            radarEl.style.maxWidth = '4cm';
+            radarEl.style.maxHeight = '4cm';
+            radarEl.style.margin = '0.2cm 0';
             cardContent.appendChild(radarEl);
         }
         
         // 6. 气泡温度
         const propsEl = resultClone.querySelector('[class*="bubble"], [class*="temp"], [class*="property"]');
         if (propsEl) {
-            propsEl.className = 'properties';
+            console.log('Found properties:', propsEl.textContent);
+            propsEl.style.display = 'flex';
+            propsEl.style.justifyContent = 'center';
+            propsEl.style.gap = '1cm';
+            propsEl.style.margin = '0.2cm 0';
+            propsEl.style.fontSize = '9pt';
             cardContent.appendChild(propsEl);
         }
         
         // 7. 描述文案
         const descEl = resultClone.querySelector('p, [class*="desc"]');
         if (descEl && descEl.textContent.length > 10) {
-            descEl.className = 'description';
+            console.log('Found description:', descEl.textContent.substring(0, 50));
+            descEl.style.fontSize = '9pt';
+            descEl.style.lineHeight = '1.5';
+            descEl.style.margin = '0.3cm 0';
+            descEl.style.padding = '0 0.2cm';
             cardContent.appendChild(descEl);
         }
         
         // 8. 最佳伴侣
         const partnerEl = resultClone.querySelector('[class*="partner"], [class*="match"]');
         if (partnerEl) {
-            partnerEl.className = 'partner';
-            const label = partnerEl.querySelector('[class*="label"], span:first-child');
-            if (label) label.className = 'partner-label';
-            const content = partnerEl.querySelector('[class*="content"], div');
-            if (content) content.className = 'partner-content';
+            console.log('Found partner:', partnerEl.textContent.substring(0, 50));
+            partnerEl.style.borderTop = '1px solid #ddd';
+            partnerEl.style.paddingTop = '0.3cm';
+            partnerEl.style.marginTop = '0.2cm';
+            partnerEl.style.width = '100%';
             cardContent.appendChild(partnerEl);
         }
         
         // 底部
         const footer = document.createElement('div');
-        footer.className = 'print-card-footer';
+        footer.style.fontSize = '7pt';
+        footer.style.color = '#bbb';
+        footer.style.marginTop = 'auto';
+        footer.style.paddingTop = '0.3cm';
         footer.textContent = '五行纳音 · 本命饮品';
         cardContent.appendChild(footer);
         
         container.appendChild(cardContent);
+        console.log('Card content created');
     }
     
     // 打印卡片
     function printCard() {
+        console.log('Print button clicked');
         if (!isResultPage()) {
             alert('未检测到结果内容，请确保在结果页');
             return;
         }
-        cloneAndReformat();
-        window.print();
+        try {
+            cloneAndReformat();
+            console.log('Calling window.print()');
+            window.print();
+        } catch (e) {
+            console.error('Print error:', e);
+            alert('打印出错: ' + e.message);
+        }
     }
     
     // 初始化
