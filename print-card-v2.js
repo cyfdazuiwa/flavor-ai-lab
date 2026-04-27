@@ -1,5 +1,4 @@
 // 打印卡片功能 - 14cm x 10cm 竖版小卡片
-// 策略：克隆结果页内容，重新排版成卡片尺寸
 (function() {
     'use strict';
     
@@ -23,7 +22,6 @@
         `;
         btn.onclick = printCard;
         
-        // 插入到页面底部
         const root = document.getElementById('root');
         if (root) {
             root.appendChild(btn);
@@ -33,7 +31,7 @@
         return btn;
     }
     
-    // 创建打印容器（用于重新排版）
+    // 创建打印容器
     function createPrintContainer() {
         const container = document.createElement('div');
         container.id = 'print-card-container';
@@ -49,16 +47,13 @@
             .print-only { display: none !important; }
             
             @media print {
-                /* 隐藏原页面 */
-                body > *:not(.print-only) { display: none !important; }
-                
-                /* 去掉默认页眉页脚 */
                 @page {
                     size: 10cm 14cm;
                     margin: 0;
                 }
                 
-                /* 显示打印容器 */
+                body > *:not(.print-only) { display: none !important; }
+                
                 .print-only {
                     display: block !important;
                     position: fixed;
@@ -69,13 +64,12 @@
                     overflow: hidden;
                 }
                 
-                /* 卡片内容区 */
                 .print-card-content {
                     width: 10cm;
                     height: 14cm;
                     margin: 0 auto;
                     background: #F7F5F0;
-                    padding: 0.5cm;
+                    padding: 0.4cm 0.5cm;
                     box-sizing: border-box;
                     display: flex;
                     flex-direction: column;
@@ -83,90 +77,99 @@
                     text-align: center;
                 }
                 
-                /* 饮品图片 */
-                .print-card-content img:first-child {
-                    width: 2.2cm;
+                .print-card-content img.drink-img {
+                    width: 2cm;
                     height: auto;
-                    margin-bottom: 0.2cm;
+                    margin-bottom: 0.15cm;
                 }
                 
-                /* 饮品名称 */
-                .print-card-content h1,
-                .print-card-content h2 {
-                    font-size: 18pt !important;
-                    margin: 0 0 0.15cm 0 !important;
+                .print-card-content h1 {
+                    font-size: 16pt !important;
+                    margin: 0 0 0.1cm 0 !important;
                     font-weight: 600;
                     color: #333;
                 }
                 
-                /* 纳音 */
-                .print-card-content .nayin,
-                .print-card-content [class*="nayin"] {
+                .print-card-content .nayin {
                     font-size: 9pt;
                     color: #666;
-                    margin: 0 0 0.1cm 0;
+                    margin: 0 0 0.05cm 0;
                 }
                 
-                /* 五行分布 */
-                .print-card-content .wuxing,
-                .print-card-content [class*="wuxing"] {
+                .print-card-content .wuxing {
                     font-size: 8pt;
                     color: #888;
-                    margin: 0 0 0.2cm 0;
+                    margin: 0 0 0.15cm 0;
                 }
                 
-                /* 雷达图 */
-                .print-card-content canvas,
-                .print-card-content svg {
-                    max-width: 3cm !important;
-                    max-height: 3cm !important;
-                    margin: 0.1cm 0;
+                .print-card-content h3 {
+                    font-size: 8pt !important;
+                    color: #999;
+                    margin: 0.1cm 0 0.05cm 0 !important;
+                    font-weight: 500;
                 }
                 
-                /* 气泡温度 */
-                .print-card-content [class*="bubble"],
-                .print-card-content [class*="temp"] {
+                .print-card-content .radar-img {
+                    max-width: 2.5cm !important;
+                    max-height: 2.5cm !important;
+                    margin: 0.05cm 0;
+                }
+                
+                .print-card-content .properties {
                     font-size: 8pt;
-                    margin: 0.1cm 0;
+                    color: #666;
+                    margin: 0.05cm 0;
                 }
                 
-                /* 描述文案 */
-                .print-card-content p,
-                .print-card-content [class*="desc"] {
+                .print-card-content .desc {
                     font-size: 8pt;
                     line-height: 1.4;
                     color: #333;
-                    margin: 0.2cm 0;
+                    margin: 0.1cm 0;
                     padding: 0 0.2cm;
                 }
                 
-                /* 最佳伴侣 */
-                .print-card-content [class*="partner"],
-                .print-card-content [class*="match"] {
-                    border-top: 1px solid #ddd;
-                    padding-top: 0.2cm;
-                    margin-top: 0.2cm;
-                    width: 100%;
+                .print-card-content .insight {
+                    font-size: 7pt;
+                    line-height: 1.3;
+                    color: #888;
+                    margin: 0.1cm 0;
+                    padding: 0 0.2cm;
+                    font-style: italic;
                 }
                 
-                .print-card-content [class*="partner"] img,
-                .print-card-content [class*="match"] img {
-                    width: 1cm;
+                .print-card-content .partner-section {
+                    border-top: 1px solid #ddd;
+                    padding-top: 0.15cm;
+                    margin-top: 0.1cm;
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.2cm;
+                }
+                
+                .print-card-content .partner-section img {
+                    width: 0.8cm;
                     height: auto;
                 }
                 
-                .print-card-content [class*="partner"] span,
-                .print-card-content [class*="match"] span {
-                    font-size: 9pt;
+                .print-card-content .partner-section span {
+                    font-size: 8pt;
                     color: #333;
                 }
                 
-                /* 底部 */
-                .print-card-footer {
+                .print-card-content .music {
                     font-size: 7pt;
+                    color: #aaa;
+                    margin-top: 0.1cm;
+                }
+                
+                .print-card-footer {
+                    font-size: 6pt;
                     color: #bbb;
                     margin-top: auto;
-                    padding-top: 0.2cm;
+                    padding-top: 0.15cm;
                 }
             }
         `;
@@ -186,123 +189,176 @@
         const container = document.getElementById('print-card-container');
         container.innerHTML = '';
         
-        // 创建卡片内容区
         const cardContent = document.createElement('div');
         cardContent.className = 'print-card-content';
         
-        // 找原页面的关键元素
+        // 获取原页面所有元素
         const root = document.getElementById('root');
         if (!root) {
-            console.error('Root element not found');
+            console.error('Root not found');
             return;
         }
         
-        console.log('Root found, children:', root.children.length);
+        // 获取所有直接子元素
+        const allElements = Array.from(root.querySelectorAll('*'));
+        console.log('Total elements:', allElements.length);
         
-        // 克隆整个结果区域
-        const resultClone = root.cloneNode(true);
-        
-        // 移除不需要的元素（按钮、输入框等）
-        const removeSelectors = 'button, input, nav, .nav, [class*="button"], [class*="input"], [class*="form"]';
-        resultClone.querySelectorAll(removeSelectors).forEach(el => el.remove());
-        
-        // 重新组织内容 - 按顺序添加各个部分
-        
-        // 1. 饮品图片 - 找最大的图片
-        const allImgs = Array.from(resultClone.querySelectorAll('img'));
-        const drinkImg = allImgs.find(img => {
-            const rect = img.getBoundingClientRect ? {width: img.width, height: img.height} : {width: 0, height: 0};
-            return rect.width > 50 || img.naturalWidth > 50;
-        }) || allImgs[0];
-        
+        // 1. 饮品图片 - 找第一个大图（产品图）
+        const drinkImg = root.querySelector('img[alt]');
         if (drinkImg) {
-            console.log('Found drink image:', drinkImg.src);
-            drinkImg.style.width = '2.5cm';
-            drinkImg.style.height = 'auto';
-            drinkImg.style.marginBottom = '0.3cm';
-            cardContent.appendChild(drinkImg);
+            console.log('Found drink img:', drinkImg.alt);
+            const img = document.createElement('img');
+            img.src = drinkImg.src;
+            img.alt = drinkImg.alt;
+            img.className = 'drink-img';
+            cardContent.appendChild(img);
         }
         
-        // 2. 饮品名称
-        const nameEl = resultClone.querySelector('h1, h2, .text-2xl, .text-xl, [class*="title"]');
-        if (nameEl) {
-            console.log('Found name:', nameEl.textContent);
-            nameEl.style.fontSize = '20pt';
-            nameEl.style.margin = '0 0 0.2cm 0';
-            nameEl.style.fontWeight = '600';
-            cardContent.appendChild(nameEl);
+        // 2. 饮品名称 - h1
+        const h1 = root.querySelector('h1');
+        if (h1) {
+            console.log('Found h1:', h1.textContent);
+            const name = document.createElement('h1');
+            name.textContent = h1.textContent;
+            cardContent.appendChild(name);
         }
         
-        // 3. 纳音
-        const nayinEl = resultClone.querySelector('[class*="nayin"]');
-        if (nayinEl) {
-            console.log('Found nayin:', nayinEl.textContent);
-            nayinEl.style.fontSize = '10pt';
-            nayinEl.style.color = '#666';
-            nayinEl.style.margin = '0 0 0.15cm 0';
-            cardContent.appendChild(nayinEl);
+        // 3. 纳音 - 包含"纳音"的 p
+        const allP = Array.from(root.querySelectorAll('p'));
+        const nayinP = allP.find(p => p.textContent.includes('纳音'));
+        if (nayinP) {
+            console.log('Found nayin:', nayinP.textContent);
+            const nayin = document.createElement('p');
+            nayin.className = 'nayin';
+            nayin.textContent = nayinP.textContent;
+            cardContent.appendChild(nayin);
         }
         
-        // 4. 五行分布
-        const wuxingEl = resultClone.querySelector('[class*="wuxing"], [class*="element"]');
-        if (wuxingEl) {
-            console.log('Found wuxing:', wuxingEl.textContent);
-            wuxingEl.style.fontSize = '9pt';
-            wuxingEl.style.color = '#888';
-            wuxingEl.style.margin = '0 0 0.3cm 0';
-            cardContent.appendChild(wuxingEl);
+        // 4. 五行分布 - 包含数字的 p（如"木7 火1 水2"）
+        const wuxingP = allP.find(p => /[木火土金水]\d/.test(p.textContent));
+        if (wuxingP) {
+            console.log('Found wuxing:', wuxingP.textContent);
+            const wuxing = document.createElement('p');
+            wuxing.className = 'wuxing';
+            wuxing.textContent = wuxingP.textContent;
+            cardContent.appendChild(wuxing);
         }
         
-        // 5. 雷达图（如果有）
-        const radarEl = resultClone.querySelector('canvas, svg, [class*="radar"], [class*="chart"]');
-        if (radarEl) {
-            console.log('Found radar chart');
-            radarEl.style.maxWidth = '4cm';
-            radarEl.style.maxHeight = '4cm';
-            radarEl.style.margin = '0.2cm 0';
-            cardContent.appendChild(radarEl);
+        // 5. 五行属性分布标题 + 雷达图
+        const h3s = Array.from(root.querySelectorAll('h3'));
+        const wuxingH3 = h3s.find(h => h.textContent.includes('五行'));
+        if (wuxingH3) {
+            const title = document.createElement('h3');
+            title.textContent = wuxingH3.textContent;
+            cardContent.appendChild(title);
         }
         
-        // 6. 气泡温度
-        const propsEl = resultClone.querySelector('[class*="bubble"], [class*="temp"], [class*="property"]');
-        if (propsEl) {
-            console.log('Found properties:', propsEl.textContent);
-            propsEl.style.display = 'flex';
-            propsEl.style.justifyContent = 'center';
-            propsEl.style.gap = '1cm';
-            propsEl.style.margin = '0.2cm 0';
-            propsEl.style.fontSize = '9pt';
-            cardContent.appendChild(propsEl);
+        // 雷达图 - 找 svg 或 canvas
+        const radar = root.querySelector('svg, canvas');
+        if (radar) {
+            console.log('Found radar');
+            const radarClone = radar.cloneNode(true);
+            radarClone.className = 'radar-img';
+            radarClone.style.maxWidth = '2.5cm';
+            radarClone.style.maxHeight = '2.5cm';
+            cardContent.appendChild(radarClone);
         }
         
-        // 7. 描述文案
-        const descEl = resultClone.querySelector('p, [class*="desc"]');
-        if (descEl && descEl.textContent.length > 10) {
-            console.log('Found description:', descEl.textContent.substring(0, 50));
-            descEl.style.fontSize = '9pt';
-            descEl.style.lineHeight = '1.5';
-            descEl.style.margin = '0.3cm 0';
-            descEl.style.padding = '0 0.2cm';
-            cardContent.appendChild(descEl);
+        // 6. 气泡温度 - 找包含"气泡"或"温度"的元素
+        const bubbleP = allP.find(p => p.textContent.includes('气泡') || p.textContent.includes('温度'));
+        if (bubbleP) {
+            const props = document.createElement('p');
+            props.className = 'properties';
+            // 找相邻的文本
+            const nextText = bubbleP.nextElementSibling;
+            if (nextText) {
+                props.textContent = bubbleP.textContent + '：' + nextText.textContent;
+            } else {
+                props.textContent = bubbleP.textContent;
+            }
+            cardContent.appendChild(props);
         }
         
-        // 8. 最佳伴侣
-        const partnerEl = resultClone.querySelector('[class*="partner"], [class*="match"]');
-        if (partnerEl) {
-            console.log('Found partner:', partnerEl.textContent.substring(0, 50));
-            partnerEl.style.borderTop = '1px solid #ddd';
-            partnerEl.style.paddingTop = '0.3cm';
-            partnerEl.style.marginTop = '0.2cm';
-            partnerEl.style.width = '100%';
-            cardContent.appendChild(partnerEl);
+        // 7. 描述文案 - 较长的 p（不含纳音、五行、气泡等）
+        const descP = allP.find(p => {
+            const text = p.textContent.trim();
+            return text.length > 20 
+                && text.length < 100
+                && !text.includes('纳音')
+                && !text.includes('五行')
+                && !text.includes('气泡')
+                && !text.includes('温度')
+                && !text.includes('伴侣')
+                && !text.includes('音乐');
+        });
+        if (descP) {
+            console.log('Found desc:', descP.textContent.substring(0, 50));
+            const desc = document.createElement('p');
+            desc.className = 'desc';
+            desc.textContent = descP.textContent;
+            cardContent.appendChild(desc);
+        }
+        
+        // 8. 洞察文案 - 包含"💡"或"建议"
+        const insightP = allP.find(p => p.textContent.includes('💡') || p.textContent.includes('建议'));
+        if (insightP) {
+            console.log('Found insight:', insightP.textContent.substring(0, 50));
+            const insight = document.createElement('p');
+            insight.className = 'insight';
+            insight.textContent = insightP.textContent.replace('💡', '');
+            cardContent.appendChild(insight);
+        }
+        
+        // 9. 最佳伴侣
+        const partnerH3 = h3s.find(h => h.textContent.includes('伴侣'));
+        if (partnerH3) {
+            const partnerSection = document.createElement('div');
+            partnerSection.className = 'partner-section';
+            
+            // 找伴侣图片（在最佳伴侣标题后面的 img）
+            let nextEl = partnerH3.nextElementSibling;
+            while (nextEl && nextEl.tagName !== 'IMG') {
+                nextEl = nextEl.nextElementSibling;
+            }
+            if (nextEl && nextEl.tagName === 'IMG') {
+                const partnerImg = document.createElement('img');
+                partnerImg.src = nextEl.src;
+                partnerImg.alt = nextEl.alt;
+                partnerSection.appendChild(partnerImg);
+            }
+            
+            // 找伴侣名称
+            let nameEl = partnerH3.nextElementSibling;
+            while (nameEl && nameEl.tagName !== 'P') {
+                nameEl = nameEl.nextElementSibling;
+            }
+            if (nameEl) {
+                const partnerName = document.createElement('span');
+                partnerName.textContent = nameEl.textContent;
+                partnerSection.appendChild(partnerName);
+            }
+            
+            cardContent.appendChild(partnerSection);
+        }
+        
+        // 10. 本命音乐
+        const musicH3 = h3s.find(h => h.textContent.includes('音乐'));
+        if (musicH3) {
+            let nextEl = musicH3.nextElementSibling;
+            while (nextEl && nextEl.tagName !== 'P') {
+                nextEl = nextEl.nextElementSibling;
+            }
+            if (nextEl) {
+                const music = document.createElement('p');
+                music.className = 'music';
+                music.textContent = '🎵 ' + nextEl.textContent;
+                cardContent.appendChild(music);
+            }
         }
         
         // 底部
         const footer = document.createElement('div');
-        footer.style.fontSize = '7pt';
-        footer.style.color = '#bbb';
-        footer.style.marginTop = 'auto';
-        footer.style.paddingTop = '0.3cm';
+        footer.className = 'print-card-footer';
         footer.textContent = '五行纳音 · 本命饮品';
         cardContent.appendChild(footer);
         
@@ -335,7 +391,6 @@
         createPrintContainer();
         const btn = createPrintButton();
         
-        // 监听页面变化
         const observer = new MutationObserver(() => {
             if (isResultPage()) {
                 btn.style.display = 'block';
@@ -353,7 +408,6 @@
         console.log('Print card initialized');
     }
     
-    // 延迟初始化
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => setTimeout(init, 3000));
     } else {
