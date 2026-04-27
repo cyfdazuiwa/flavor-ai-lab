@@ -171,6 +171,19 @@
                     size: 10cm 14cm;
                     margin: 0;
                 }
+                
+                /* 去掉浏览器默认页眉页脚 */
+                @page :first {
+                    margin-top: 0;
+                }
+                
+                @page :left {
+                    margin-left: 0;
+                }
+                
+                @page :right {
+                    margin-right: 0;
+                }
             }
         `;
         document.head.appendChild(style);
@@ -183,38 +196,72 @@
         return drinks.some(d => bodyText.includes(d)) && bodyText.includes('纳音');
     }
     
-    // 抓取结果页数据
+    // 抓取结果页数据 - 基于实际页面结构
     function extractResultData() {
         const data = {};
+        const bodyText = document.body.innerText;
         
-        // 饮品名称 - 尝试多种选择器
-        const nameEl = document.querySelector('h1, h2, [class*="drink"], [class*="name"]');
+        // 饮品名称 - 找大标题
+        const nameEl = document.querySelector('h1, h2, .text-2xl, .text-xl, [class*="title"]');
         if (nameEl) data.name = nameEl.textContent.trim();
         
-        // 饮品图片
-        const imgEl = document.querySelector('img[src*="drink"], img[src*="product"], .result img, [class*="result"] img');
-        if (imgEl) data.img = imgEl.src;
+        // 饮品图片 - 找页面里最大的图片或特定路径
+        const allImgs = Array.from(document.querySelectorAll('img'));
+        // 优先找饮品相关图片
+        const drinkImg = allImgs.find(img => 
+            img.src.includes('drink') || 
+            img.src.includes('product') ||
+            img.alt.includes('饮品') ||
+            img.width > 100
+        );
+        if (drinkImg) data.img = drinkImg.src;
         
-        // 纳音
-        const nayinMatch = document.body.innerText.match(/纳音[：:]\s*(.+)/);
+        // 纳音 - 从文本匹配
+        const nayinMatch = bodyText.match(/纳音[：:]\s*([^\n]+)/);
         if (nayinMatch) data.nayin = nayinMatch[1].trim();
         
-        // 五行
-        const wuxingMatch = document.body.innerText.match(/五行[：:]\s*(.+)/);
-        if (wuxingMatch) data.wuxing = wuxingMatch[1].trim();
+        // 五行分布 - 找五行相关文本
+        const wuxingMatch = bodyText.match(/五行[：:]\s*([^\n]+)/);
+        if (wuxingMatch) {
+            data.wuxing = wuxingMatch[1].trim();
+        } else {
+            // 尝试找五行相关的元素文本
+            const wuxingEl = document.querySelector('[class*="wuxing"], [class*="element"]');
+            if (wuxingEl) data.wuxing = wuxingEl.textContent.trim();
+        }
         
-        // 描述文案
-        const descEl = document.querySelector('[class*="desc"], [class*="description"], p');
+        // 描述文案 - 找较长的段落文本
+        const paragraphs = Array.from(document.querySelectorAll('p, [class*="desc"], [class*="text"]'));
+        const descEl = paragraphs.find(p => {
+            const text = p.textContent.trim();
+            return text.length > 20 && text.length < 200 && !text.includes('纳音');
+        });
         if (descEl) data.desc = descEl.textContent.trim();
         
-        // 最佳伴侣
-        const partnerSection = document.querySelector('[class*="partner"], [class*="match"]');
+        // 最佳伴侣 - 找包含"伴侣"或"合拍"的区域
+        const allElements = Array.from(document.querySelectorAll('*'));
+        const partnerSection = allElements.find(el => {
+            const text = el.textContent;
+            return (text.includes('最佳伴侣') || text.includes('合拍')) && el.children.length > 0;
+        });
+        
         if (partnerSection) {
-            const partnerImg = partnerSection.querySelector('img');
-            const partnerName = partnerSection.querySelector('span, h3, h4, p');
+            // 在伴侣区域内找图片和名称
+            const partnerImgs = partnerSection.querySelectorAll('img');
+            const partnerTexts = partnerSection.querySelectorAll('span, h3, h4, p, div');
+            
+            // 找第一个有 src 的图片
+            const partnerImg = Array.from(partnerImgs).find(img => img.src && !img.src.includes('data:'));
+            
+            // 找伴侣名称（排除"最佳伴侣"标签本身）
+            const partnerNameEl = Array.from(partnerTexts).find(el => {
+                const text = el.textContent.trim();
+                return text.length > 0 && text.length < 20 && !text.includes('伴侣') && !text.includes('合拍');
+            });
+            
             data.partner = {
                 img: partnerImg ? partnerImg.src : '',
-                name: partnerName ? partnerName.textContent.trim() : ''
+                name: partnerNameEl ? partnerNameEl.textContent.trim() : ''
             };
         }
         
