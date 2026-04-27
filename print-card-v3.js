@@ -49,7 +49,7 @@
             
             @media print {
                 @page {
-                    size: A5;
+                    size: 10cm 14cm;
                     margin: 0;
                 }
                 
@@ -66,11 +66,11 @@
                 }
                 
                 .print-card-content {
-                    width: 100%;
-                    height: 100vh;
-                    margin: 0;
+                    width: 10cm;
+                    height: 14cm;
+                    margin: 0 auto;
                     background: #F5F5F0;
-                    padding: 0.8cm;
+                    padding: 0.4cm;
                     box-sizing: border-box;
                     display: flex;
                     flex-direction: column;
