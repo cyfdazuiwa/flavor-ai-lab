@@ -493,6 +493,7 @@
         
         // 最佳伴侣
         const partnerH3 = h3s.find(h => h.textContent.includes('伴侣'));
+        console.log('Partner H3 found:', partnerH3 ? partnerH3.textContent : 'not found');
         if (partnerH3) {
             const partnerTitle = document.createElement('div');
             partnerTitle.className = 'partner-title';
@@ -506,7 +507,9 @@
             let imgFound = false;
             let nextEl = partnerH3.nextElementSibling;
             while (nextEl) {
+                console.log('Checking element:', nextEl.tagName, nextEl.className);
                 if (nextEl.tagName === 'IMG') {
+                    console.log('Found partner img:', nextEl.src);
                     const partnerImg = document.createElement('img');
                     partnerImg.src = nextEl.src;
                     partnerImg.alt = nextEl.alt || '';
@@ -518,6 +521,7 @@
                 if (nextEl.querySelector) {
                     const innerImg = nextEl.querySelector('img');
                     if (innerImg) {
+                        console.log('Found inner partner img:', innerImg.src);
                         const partnerImg = document.createElement('img');
                         partnerImg.src = innerImg.src;
                         partnerImg.alt = innerImg.alt || '';
@@ -528,6 +532,7 @@
                 }
                 nextEl = nextEl.nextElementSibling;
             }
+            console.log('Image found:', imgFound);
             
             // 伴侣信息
             const partnerInfo = document.createElement('div');
@@ -540,6 +545,7 @@
                 if (nameEl.textContent && nameEl.textContent.trim().length > 0) {
                     const text = nameEl.textContent.trim();
                     if (text !== '' && !text.includes('💕') && !text.includes('伴侣') && nameEl.tagName !== 'IMG') {
+                        console.log('Found partner name:', text);
                         const partnerName = document.createElement('div');
                         partnerName.className = 'partner-name';
                         partnerName.textContent = text;
@@ -559,6 +565,7 @@
                 }
                 nameEl = nameEl.nextElementSibling;
             }
+            console.log('Name found:', nameFound);
             
             if (!nameFound) {
                 // 备用方案
