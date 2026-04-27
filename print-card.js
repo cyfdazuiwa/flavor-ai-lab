@@ -8,25 +8,27 @@
     function createPrintButton() {
         const btn = document.createElement('button');
         btn.id = 'print-card-btn';
-        btn.innerHTML = '🖨️ 打印卡片';
+        btn.innerHTML = '🖨️ 打印结果卡片';
         btn.style.cssText = `
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9998;
+            display: none;
+            width: 100%;
+            padding: 16px;
             background: #333;
             color: #fff;
             border: none;
-            border-radius: 24px;
-            padding: 12px 24px;
-            font-size: 14px;
+            font-size: 16px;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            display: none;
+            margin-top: 20px;
         `;
         btn.onclick = printCard;
-        document.body.appendChild(btn);
+        
+        // 插入到页面底部
+        const root = document.getElementById('root');
+        if (root) {
+            root.appendChild(btn);
+        } else {
+            document.body.appendChild(btn);
+        }
         return btn;
     }
     
